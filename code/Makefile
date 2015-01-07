@@ -45,6 +45,12 @@ clean:
 		$(MAKE) -C $$i $@; \
 	done
 
+cleantmp:
+	for dir in machine threads userprog filesys network vm test .; \
+	do \
+		rm -vf -- $${dir}/*~;\
+	done
+
 ## LPR	:=	echo
 LPR	:=	enscript --columns=2  --borders -r --landscape \
 		--media=A4 --verbose --pretty-print --toc 
@@ -60,7 +66,7 @@ print:
 	done > list
 	$(LPR) `cat list` 
 
-INDENT	:= indent --indent-level4
+INDENT	:= indent --indent-level4 -nut
 DIRS_INDENT	:= threads userprog test
 
 indent:

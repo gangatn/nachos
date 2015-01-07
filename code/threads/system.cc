@@ -8,6 +8,10 @@
 #include "copyright.h"
 #include "system.h"
 
+#ifdef CHANGED
+#include "synchconsole.h"
+#endif // CHANGED
+
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
@@ -35,6 +39,11 @@ Machine *machine;		// user program memory and registers
 PostOffice *postOffice;
 #endif
 
+#ifdef CHANGED
+#ifdef USER_PROGRAM
+SynchConsole *synchconsole;
+#endif // USER_PROGRAM
+#endif // CHANGED
 
 // External definition, to allow us to take a pointer to this function
 extern void Cleanup ();
@@ -199,6 +208,12 @@ Cleanup ()
     delete timer;
     delete scheduler;
     delete interrupt;
+
+#ifdef CHANGED
+#ifdef USER_PROGRAM
+    delete synchconsole;
+#endif // USER_PROGRAM
+#endif // CHANGED
 
     Exit (0);
 }

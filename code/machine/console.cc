@@ -99,7 +99,11 @@ Console::CheckCharAvail()
 
     // otherwise, read character and tell user about it
     n = ReadPartial(readFileNo, &c, sizeof(char));
+#ifndef CHANGED
     incoming = (n == 1 ? c : EOF);
+#else // CHANGED
+    incoming = (n == 1 ? (int)c : EOF);
+#endif
     stats->numConsoleCharsRead++;
     (*readHandler)(handlerArg);	
 }
@@ -125,6 +129,7 @@ Console::WriteDone()
 //	Either return the character, or EOF if none buffered.
 //----------------------------------------------------------------------
 
+#ifndef CHANGED
 char
 Console::GetChar()
 {
@@ -133,6 +138,16 @@ Console::GetChar()
    incoming = EOF;
    return ch;
 }
+#else // CHANGED
+int
+Console::GetChar()
+{
+   int ch = incoming;
+
+   incoming = EOF;
+   return ch;
+}
+#endif
 
 //----------------------------------------------------------------------
 // Console::PutChar()

@@ -24,6 +24,7 @@
 //    -s causes user programs to be executed in single-step mode
 //    -x runs a user program
 //    -c tests the console
+//    -sc tests the synchconsole
 //
 //  FILESYS
 //    -f causes the physical disk to be formatted
@@ -61,6 +62,10 @@ extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out);
 extern void MailTest (int networkID);
 
+#ifdef CHANGED
+extern void SynchConsoleTest(char *in, char *out);
+#endif // CHANGED
+
 //----------------------------------------------------------------------
 // main
 //      Bootstrap the operating system kernel.  
@@ -97,8 +102,18 @@ main (int argc, char **argv)
 	  if (!strcmp (*argv, "-x"))
 	    {			// run a user program
 		ASSERT (argc > 1);
+#ifdef CHANGED
+#ifdef USER_PROGRAM
+		synchconsole = new SynchConsole(NULL, NULL);
+#endif // USER_PROGRAM
+#endif // CHANGED
 		StartProcess (*(argv + 1));
 		argCount = 2;
+#ifdef CHANGED
+#ifdef USER_PROGRAM
+		delete synchconsole;
+#endif // USER_PROGRAM
+#endif // CHANGED
 	    }
 	  else if (!strcmp (*argv, "-c"))
 	    {			// test the console
@@ -114,6 +129,29 @@ main (int argc, char **argv)
 		// Nachos will loop forever waiting 
 		// for console input
 	    }
+#ifdef CHANGED
+	  else if (!strcmp (*argv, "-sc"))
+	    {			// test the console
+#ifdef USER_PROGRAM
+	      synchconsole = new SynchConsole(NULL, NULL);
+#endif // USER_PROGRAM
+
+		if (argc == 1)
+		    SynchConsoleTest (NULL, NULL);
+		else
+		  {
+		      ASSERT (argc > 2);
+		      SynchConsoleTest (*(argv + 1), *(argv + 2));
+		      argCount = 3;
+		  }
+		interrupt->Halt ();	// once we start the console, then 
+		// Nachos will loop forever waiting 
+		// for console input
+#ifdef USER_PROGRAM
+		delete synchconsole;
+#endif // USER_PROGRAM
+	    }
+#endif // CHANGED
 #endif // USER_PROGRAM
 #ifdef FILESYS
 	  if (!strcmp (*argv, "-cp"))
