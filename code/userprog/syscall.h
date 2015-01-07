@@ -140,7 +140,7 @@ void Yield ();
 #ifdef CHANGED
 void PutChar(char c);
 void PutString(char *s);
-char GetChar();
+int GetChar();
 void GetString(char *s, int n);
 void PutInt(int n);
 void GetInt(int *n);

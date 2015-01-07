@@ -89,6 +89,7 @@ ExceptionHandler (ExceptionType which)
 
 #ifdef CHANGED
     char ch;
+    int intch;
     char str[MAX_STRING_SIZE];
     int mipsptr;
     int ret;
@@ -136,8 +137,8 @@ ExceptionHandler (ExceptionType which)
 	    break;
 
 	  case SC_GetChar:
-	    ch = synchconsole->SynchGetChar();
-	    machine->WriteRegister(2, (int)ch);
+	    intch = synchconsole->SynchGetChar();
+	    machine->WriteRegister(2, intch);
 	    break;
 
 	  case SC_GetString:
@@ -146,11 +147,11 @@ ExceptionHandler (ExceptionType which)
 	    ASSERT(size >= 0);
 
 	    for (i = 0 ; i < size-1 ; ++i) {
-	      ch = synchconsole->SynchGetChar();
-	      if (ch == EOF)
+	      intch = synchconsole->SynchGetChar();
+	      if (intch == EOF)
 		break; 
-	      ASSERT(machine->WriteMem(addr+i, 1, (int)ch));
-	      if (ch == '\n' || ch == '\0') {
+	      ASSERT(machine->WriteMem(addr+i, 1, intch));
+	      if (intch == '\n' || intch == '\0') {
 		++i;
 		break;
 	      }
