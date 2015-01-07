@@ -13,6 +13,7 @@
 #include "console.h"
 #include "addrspace.h"
 #include "synch.h"
+#include "synchconsole.h"
 
 //----------------------------------------------------------------------
 // StartProcess
@@ -83,13 +84,43 @@ ConsoleTest (char *in, char *out)
     readAvail = new Semaphore ("read avail", 0);
     writeDone = new Semaphore ("write done", 0);
 
+#ifndef CHANGED
+    for (;;)
+      {
+          readAvail->P ();      // wait for character to arrive
+          ch = console->GetChar ();
+          console->PutChar (ch);        // echo it!
+          writeDone->P ();      // wait for write to finish
+	  if (ch == 'q')
+	    return;           // if q, quit
+      }
+#else // CHANGED
     for (;;)
       {
 	  readAvail->P ();	// wait for character to arrive
 	  ch = console->GetChar ();
+	  if (ch != '\n') {
+	    console->PutChar('<');
+	    writeDone->P();
+	  }
 	  console->PutChar (ch);	// echo it!
 	  writeDone->P ();	// wait for write to finish
-	  if (ch == 'q')
+	  if (ch != '\n') {
+	    console->PutChar('>');
+	    writeDone->P();
+	  }
+	  if (ch == 'q' || ch == EOF)
 	      return;		// if q, quit
       }
+#endif // CHANGED
 }
+
+#ifdef CHANGED
+void SynchConsoleTest(char *in, char *out)
+{
+  char ch;
+
+  while ((ch = synchconsole->SynchGetChar()) != EOF)
+    synchconsole->SynchPutChar(ch);
+}
+#endif // CHANGED

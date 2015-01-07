@@ -41,6 +41,24 @@ UpdatePC ()
 }
 
 
+#ifdef CHANGED
+static void copyStringFromMachine(int from, char *to, unsigned int size)
+{
+  unsigned int i = 0;
+  int ch;
+
+  while (i < size-1) {
+    ASSERT(machine->ReadMem(from+i, 1, &ch));
+    to[i] = (char)ch;
+    ++i;
+    if (ch == '\0')
+      return;
+  }
+
+  to[size-1] = '\0';
+}
+#endif // CHANGED
+
 //----------------------------------------------------------------------
 // ExceptionHandler
 //      Entry point into the Nachos kernel.  Called when a user program
@@ -69,6 +87,17 @@ ExceptionHandler (ExceptionType which)
 {
     int type = machine->ReadRegister (2);
 
+#ifdef CHANGED
+    char ch;
+    char str[MAX_STRING_SIZE];
+    int mipsptr;
+    int ret;
+    int addr;
+    int size;
+    int i;
+#endif // CHANGED
+
+#ifndef CHANGED
     if ((which == SyscallException) && (type == SC_Halt))
       {
 	  DEBUG ('a', "Shutdown, initiated by user program.\n");
@@ -79,6 +108,73 @@ ExceptionHandler (ExceptionType which)
 	  printf ("Unexpected user mode exception %d %d\n", which, type);
 	  ASSERT (FALSE);
       }
+#else // CHANGED
+    if (which == SyscallException)
+      {
+	switch(type)
+	  {
+	  case SC_Halt:
+	    DEBUG ('a', "Shutdown, initiated by user program.\n");
+	    interrupt->Halt ();
+	    break;
+	    
+	  case SC_Exit:
+	    ret = machine->ReadRegister(4);
+	    DEBUG('a', "Ret %d\n", ret);
+	    interrupt->Halt();
+	    break;
+
+	  case SC_PutChar:
+	    ch = (char)machine->ReadRegister(4);
+	    synchconsole->SynchPutChar(ch);
+	    break;
+	    
+	  case SC_PutString:
+	    mipsptr = machine->ReadRegister(4);
+	    copyStringFromMachine(mipsptr, str, MAX_STRING_SIZE);
+	    synchconsole->SynchPutString(str);
+	    break;
+
+	  case SC_GetChar:
+	    ch = synchconsole->SynchGetChar();
+	    machine->WriteRegister(2, (int)ch);
+	    break;
+
+	  case SC_GetString:
+	    addr = machine->ReadRegister(4);
+	    size = machine->ReadRegister(5);
+	    ASSERT(size >= 0);
+
+	    for (i = 0 ; i < size-1 ; ++i) {
+	      ch = synchconsole->SynchGetChar();
+	      if (ch == EOF)
+		break; 
+	      ASSERT(machine->WriteMem(addr+i, 1, (int)ch));
+	      if (ch == '\n' || ch == '\0') {
+		++i;
+		break;
+	      }
+	    }
+	    ASSERT(machine->WriteMem(addr+i, 1, '\0'));
+	    break;
+
+	  case SC_PutInt:
+	    i = machine->ReadRegister(4);
+	    synchconsole->SynchPutInt(i);
+	    break;
+
+	  case SC_GetInt:
+	    addr = machine->ReadRegister(4);
+	    synchconsole->SynchGetInt(&i);
+	    machine->WriteMem(addr, sizeof(int), i);
+	    break;
+	    
+	  default:
+	    printf ("Unexpected user mode exception %d %d\n", which, type);
+	    ASSERT (FALSE);
+	  }
+      }
+#endif // CHANGED
 
     // LB: Do not forget to increment the pc before returning!
     UpdatePC ();
