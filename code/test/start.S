@@ -137,11 +137,4 @@ Yield:
 	j	$31
 	.end Yield
 
-/* dummy function to keep gcc happy */
-        .globl  __main
-        .ent    __main
-__main:
-        j       $31
-        .end    __main
-
 #endif
