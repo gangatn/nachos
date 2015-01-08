@@ -112,7 +112,7 @@ ExceptionHandler (ExceptionType which)
 			printf("Invalid system call #%i\n", type);
 			ASSERT(FALSE);
 		}
-		elsema
+		else
 		{
 			handler_ptr handler = syscall_handlers[type];
 			if (handler != NULL) {
