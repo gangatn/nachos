@@ -35,11 +35,13 @@ StartProcess (char *filename)
     space = new AddrSpace (executable);
     currentThread->space = space;
 
+#ifdef CHANGED
     /* init thread count to 1 because 0 is used to join on all threads
      * and no need to set the id of the main thread
      */
     currentThread->threadcount = new unsigned int;
     *(currentThread->threadcount) = 1;
+#endif // CHANGED
 
     delete executable;		// close file
 

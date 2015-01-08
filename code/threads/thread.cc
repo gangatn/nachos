@@ -74,8 +74,10 @@ Thread::~Thread ()
     if (stack != NULL)
 	DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
 
+#ifdef CHANGED
     delete joinsem;
     delete children;
+#endif // CHANGED
 }
 
 //----------------------------------------------------------------------
