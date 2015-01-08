@@ -1,4 +1,4 @@
-/* sort.c 
+/* sort.c
  *    Test program to sort a large number of integers.
  *
  *    Intention is to stress virtual memory system.
@@ -30,4 +30,5 @@ main ()
 		  A[j + 1] = tmp;
 	      }
     Exit (A[0]);		/* and then we're done -- should be 0! */
+	return 0;
 }
