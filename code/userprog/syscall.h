@@ -24,6 +24,10 @@
 #define SYSCALL_PROC(name, handler, ...) SC_##name,
 #define SYSCALL_FUNC(name, handler, type, ...) SC_##name,
 
+/*
+ * Enum values are knows at compile time, and it's more convenient than defines
+ */
+
 enum {
 #include "syscall.def.h"
 	SYSCALL_COUNT

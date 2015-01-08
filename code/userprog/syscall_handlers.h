@@ -3,6 +3,22 @@
 
 #include "system.h"
 
+/*
+ * Utility macro to get params and return value
+ * --------------------------------------------
+ *
+ * param(n):
+ * ~~~~~~~~~
+ * return the nth parameter, parameters starts from 1
+ *
+ * rtrn(val):
+ * ~~~~~~~~~~
+ * return the given value
+ */
+
+#define param(n) machine->ReadRegister((3+n))
+#define rtrn(val) machine->WriteRegister(2, (val))
+
 static void syscall_halt(void)
 {
 
@@ -12,14 +28,14 @@ static void syscall_halt(void)
 
 static void syscall_exit(void)
 {
-	int ret = machine->ReadRegister(4);
+	int ret = param(1);
 	DEBUG('a', "exiting with code %d\n", ret);
 	interrupt->Halt();
 }
 
 static void syscall_putchar(void)
 {
-	char ch = machine->ReadRegister(4);
+	char ch = param(1);
 	synchconsole->SynchPutChar(ch);
 }
 
@@ -42,7 +58,7 @@ static void copyStringFromMachine(int from, char *to, unsigned int size)
 
 static void syscall_putstring(void)
 {
-	int mipsptr = machine->ReadRegister(4);
+	int mipsptr = param(1);
 	char str[MAX_STRING_SIZE];
 
 	copyStringFromMachine(mipsptr, str, MAX_STRING_SIZE);
@@ -52,14 +68,14 @@ static void syscall_putstring(void)
 static void syscall_getchar(void)
 {
 	int ch = synchconsole->SynchGetChar();
-	machine->WriteRegister(2, ch);
+	rtrn(ch);
 }
 
 static void syscall_getstring(void)
 {
 	int i;
-	int addr = machine->ReadRegister(4);
-	int size = machine->ReadRegister(5);
+	int addr = param(1);
+	int size = param(2);
 	int ch;
 
 	ASSERT(size >= 0);
@@ -83,14 +99,14 @@ static void syscall_getstring(void)
 
 static void syscall_putint(void)
 {
-	int val = machine->ReadRegister(4);
+	int val = param(1);
 	synchconsole->SynchPutInt(val);
 }
 
 static void syscall_getint(void)
 {
 	int val;
-	int addr = machine->ReadRegister(4);
+	int addr = param(1);
 	synchconsole->SynchGetInt(&val);
 	machine->WriteMem(addr, sizeof(val), val);
 }

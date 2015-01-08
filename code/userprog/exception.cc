@@ -72,6 +72,13 @@ typedef void (*handler_ptr)(void);
 #define SYSCALL_PROC(name, handler, ...)  handler,
 #define SYSCALL_FUNC(name, handler, type, ...)  handler,
 
+/*
+ * here we create a table of function pointers to handlers for each
+ * system call, this is actually really fast.
+ *
+ * the only issue of this implementation is the branch prediction miss
+ * but this is negligible in our case.
+ */
 handler_ptr syscall_handlers[SYSCALL_COUNT] =
 	{
 #include "syscall.def.h"
@@ -100,11 +107,21 @@ ExceptionHandler (ExceptionType which)
       }
 #else // CHANGED
 	if (which == SyscallException) {
-		handler_ptr handler = syscall_handlers[type];
-		if (handler != NULL)
-			handler();
-		else {
-			printf("No handler for syscall %i\n", type);
+
+		if(type < 0 || type >= SYSCALL_COUNT) {
+			printf("Invalid system call #%i\n", type);
+			ASSERT(FALSE);
+		}
+		elsema
+		{
+			handler_ptr handler = syscall_handlers[type];
+			if (handler != NULL) {
+				handler();
+			}
+			else {
+				printf("No handler for syscall %i\n", type);
+				ASSERT(FALSE);
+			}
 		}
 
 	}
