@@ -13,6 +13,9 @@ SynchConsole::SynchConsole(char *readFile, char *writeFile)
   writeDone = new Semaphore("write done", 0);
 
   console = new Console(readFile, writeFile, ReadAvail, WriteDone, (int)this);
+
+  writesem = new Semaphore("writecharsem", 1);
+  readsem = new Semaphore("readcharsem", 1);
 }
 
 SynchConsole::~SynchConsole()
@@ -20,17 +23,23 @@ SynchConsole::~SynchConsole()
   delete console;
   delete readAvail;
   delete writeDone;
+  delete writesem;
+  delete readsem;
 }
 
 void SynchConsole::SynchPutChar(const char ch)
 {
+  writesem->P();
   console->PutChar(ch);
   writeDone->P();
+  writesem->V();
 }
 
 int SynchConsole::SynchGetChar()
 {
+  readsem->P();
   readAvail->P();
+  readsem->V();
   return console->GetChar();
 }
 

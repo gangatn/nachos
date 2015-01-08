@@ -2,6 +2,7 @@
 #define SYSCALL_HANDLERS_H_
 
 #include "system.h"
+#include "userthread.h"
 
 /*
  * Utility macro to get params and return value
@@ -29,6 +30,9 @@ static void syscall_halt(void)
 static void syscall_exit(void)
 {
 	int ret = param(1);
+	
+	currentThread->ReapChildren();
+	
 	DEBUG('a', "exiting with code %d\n", ret);
 	interrupt->Halt();
 }
@@ -111,5 +115,18 @@ static void syscall_getint(void)
 	machine->WriteMem(addr, sizeof(val), val);
 }
 
+static void syscall_userthreadcreate(void)
+{
+  int funcptr = param(1);
+  int argptr = param(2);
+  
+  int ret = do_UserThreadCreate(funcptr, argptr);
+  rtrn(ret);
+}
+
+static void syscall_userthreadexit()
+{
+  do_UserThreadExit();
+}
 
 #endif /* SYSCALL_HANDLERS_H_ */

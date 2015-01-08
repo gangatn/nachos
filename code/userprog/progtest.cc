@@ -35,6 +35,8 @@ StartProcess (char *filename)
     space = new AddrSpace (executable);
     currentThread->space = space;
 
+    currentThread->threadcount = new unsigned int;
+
     delete executable;		// close file
 
     space->InitRegisters ();	// set the initial register values

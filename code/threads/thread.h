@@ -43,7 +43,12 @@
 #ifdef USER_PROGRAM
 #include "machine.h"
 #include "addrspace.h"
-#endif
+
+#ifdef CHANGED
+#include "synch.h"
+#endif //CHANGED
+
+#endif // USER_PROGRAM
 
 // CPU register state to be saved on context switch.  
 // The SPARC and MIPS only need 10 registers, but the Snake needs 18.
@@ -138,6 +143,18 @@ class Thread
     void RestoreUserState ();	// restore user-level register state
 
     AddrSpace *space;		// User code this thread is running.
+
+    void ReapChildren();
+
+#ifdef CHANGED
+    int userarg;
+    
+    unsigned int *threadcount; // count of threads in the process
+    unsigned int tid; // id of this thread
+    Semaphore *joinsem; // semaphore used for thread joining
+
+    List *children; // List of user thread children
+#endif // CHANGED
 #endif
 };
 
