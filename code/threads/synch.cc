@@ -1,6 +1,6 @@
-// synch.cc 
+// synch.cc
 //      Routines for synchronizing threads.  Three kinds of
-//      synchronization routines are defined here: semaphores, locks 
+//      synchronization routines are defined here: semaphores, locks
 //      and condition variables (the implementation of the last two
 //      are left to the reader).
 //
@@ -18,7 +18,7 @@
 // that be disabled or enabled).
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -71,7 +71,7 @@ Semaphore::P ()
 	  queue->Append ((void *) currentThread);	// so go to sleep
 	  currentThread->Sleep ();
       }
-    value--;			// semaphore available, 
+    value--;			// semaphore available,
     // consume its value
 
     (void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
@@ -98,24 +98,60 @@ Semaphore::V ()
     (void) interrupt->SetLevel (oldLevel);
 }
 
-// Dummy functions -- so we can compile our later assignments 
-// Note -- without a correct implementation of Condition::Wait(), 
+// Dummy functions -- so we can compile our later assignments
+// Note -- without a correct implementation of Condition::Wait(),
 // the test case in the network assignment won't work!
 Lock::Lock (const char *debugName)
 {
+	name = debugName;
+	queue = new List;
+	owner = NULL;
 }
 
 Lock::~Lock ()
 {
+	delete queue;
 }
+
+
 void
 Lock::Acquire ()
 {
+	IntStatus oldLevel = interrupt->SetLevel (IntOff);
+
+	assert(owner != currentThread);
+
+	if(owner != NULL)
+	{
+		queue->Append((void*)currentThread);
+		currentThread->Sleep();
+	}
+    ASSERT(owner == NULL);
+	owner = currentThread;
+	(void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
 }
+
 void
 Lock::Release ()
 {
+	Thread *thread;
+	IntStatus oldLevel = interrupt->SetLevel (IntOff);
+
+	thread = (Thread*)queue->Remove();
+
+	if(thread != NULL)
+	{
+		scheduler->ReadyToRun(thread);
+	}
+	owner = NULL;
+	(void) interrupt->SetLevel (oldLevel);	// re-enable interrupts
 }
+
+bool Lock::isHeldByCurrentThread ()
+{
+	return owner == currentThread;
+}
+
 
 Condition::Condition (const char *debugName)
 {
