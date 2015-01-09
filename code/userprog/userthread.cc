@@ -14,12 +14,15 @@ static void StartUserThread(int f)
   /* Set PC to f */
   machine->WriteRegister(PCReg, f);
   machine->WriteRegister(NextPCReg, f+4);
+  /* Set LR to Thread cleanup function
+   * Statically located */
+  machine->WriteRegister(RetAddrReg, 12);
   /* Pass the arg to f*/
   machine->WriteRegister(4, currentThread->userarg);
   /* SP */
   machine->WriteRegister(StackReg, (currentThread->space->getNumPages() - 3 * currentThread->tid ) * PageSize - 16);
 
-  machine->Run();  
+  machine->Run();
 }
 
 int do_UserThreadCreate(int f, int arg)
@@ -52,7 +55,7 @@ int do_UserThreadCreate(int f, int arg)
 
   /* give the thread list to the new thread */
   newThread->userthreads = currentThread->userthreads;
-  
+
   newThread->Fork(StartUserThread, f);
 
   return newThread->tid;

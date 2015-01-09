@@ -30,6 +30,10 @@ __start:
 	jal	Exit	 /* if we return from main, exit(0) */
 	.end __start
 
+/* Function to cleanup thread */
+__thread_cleanup:
+	jal UserThreadExit
+
 		/* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
