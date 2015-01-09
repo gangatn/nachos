@@ -41,6 +41,14 @@
  * X-Macros to automatie code generation.
  */
 
+/* Include guard to ensure macro definition */
+#ifndef SYSCALL_PROC
+#error "syscalls: SYSCALL_PROC must be defined"
+#endif
+
+#ifndef SYSCALL_FUNC
+#error "syscalls: SYSCALL_FUNC must be defined"
+#endif
 
 /*
  * TODO: Handle __attribute__((noreturn));???
