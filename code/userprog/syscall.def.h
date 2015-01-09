@@ -66,3 +66,4 @@ SYSCALL_PROC(GetInt, syscall_getint, int *n)
 
 SYSCALL_FUNC(UserThreadCreate, syscall_userthreadcreate, int, void (*f)(void*), void* arg)
 SYSCALL_PROC(UserThreadExit, syscall_userthreadexit)
+SYSCALL_PROC(UserThreadJoin, syscall_userthreadjoin, int tid)

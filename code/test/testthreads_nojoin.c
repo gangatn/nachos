@@ -47,17 +47,7 @@ int main()
       PutString("Thread created\n");
   }
 
-  for (i = 0 ; i < NBTHREAD ; ++i) {
-    if (tids[i] != -1) {
-      PutString("Joining thread ");
-      PutInt(tids[i]);
-      PutString("...\n");
-      UserThreadJoin(tids[i]);
-      PutString("Thread ");
-      PutInt(tids[i]);
-      PutString(" joined.\n");
-    }
-  }
+  UserThreadExit();
 
   return 0;
 }

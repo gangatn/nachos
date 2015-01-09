@@ -15,6 +15,13 @@
 #include "synch.h"
 #include "synchconsole.h"
 
+#ifdef CHANGED
+#include <list>
+#include <queue>
+
+using namespace std;
+#endif // CHANGED
+
 //----------------------------------------------------------------------
 // StartProcess
 //      Run a user program.  Open the executable, load it into
@@ -36,10 +43,21 @@ StartProcess (char *filename)
     currentThread->space = space;
 
 #ifdef CHANGED
-    /* init thread count to 1 because 0 is used to join on all threads
-     * and no need to set the id of the main thread
-     */
-    currentThread->threadcount = new unsigned int;
+    /* init the thread max tid */
+    currentThread->maxtid = new int;
+    *(currentThread->maxtid) = 1;
+
+    /* main thread have the 0 tid */
+    currentThread->tid = 0;
+
+    /* init the thread list and add the main thread into */
+    currentThread->userthreads = new list<Thread*>();
+    currentThread->userthreads->push_back(currentThread);
+
+    /* init the list of available tids */
+    currentThread->availabletids = new queue<int>();
+
+    currentThread->threadcount = new int;
     *(currentThread->threadcount) = 1;
 #endif // CHANGED
 

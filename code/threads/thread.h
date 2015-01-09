@@ -46,6 +46,8 @@
 
 #ifdef CHANGED
 #include "synch.h"
+#include <list>
+#include <queue>
 #endif //CHANGED
 
 #endif // USER_PROGRAM
@@ -144,16 +146,17 @@ class Thread
 
     AddrSpace *space;		// User code this thread is running.
 
-    void ReapChildren();
-
 #ifdef CHANGED
     int userarg;
     
-    unsigned int *threadcount; // count of threads in the process
-    unsigned int tid; // id of this thread
+    int *maxtid; // count of threads in the process
+    int tid; // id of this thread
     Semaphore *joinsem; // semaphore used for thread joining
 
-    List *children; // List of user thread children
+    std::list<Thread*> *userthreads;
+    int *threadcount;
+
+    std::queue<int> *availabletids;
 #endif // CHANGED
 #endif
 };

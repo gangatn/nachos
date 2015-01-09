@@ -45,13 +45,11 @@ Thread::Thread (const char *threadName)
     // user threads.
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
-#endif
 
 #ifdef CHANGED
-#ifdef USER_PROGRAM
-    children = NULL;
-#endif
+    joinsem = new Semaphore("userthread semaphore", 0);
 #endif // CHANGED
+#endif // USER_PROGRAM
 }
 
 //----------------------------------------------------------------------
@@ -76,7 +74,6 @@ Thread::~Thread ()
 
 #ifdef CHANGED
     delete joinsem;
-    delete children;
 #endif // CHANGED
 }
 
@@ -420,20 +417,6 @@ Thread::RestoreUserState ()
 	machine->WriteRegister (i, userRegisters[i]);
 }
 
-#ifdef CHANGED
-
-void Thread::ReapChildren()
-{
-  if(children != NULL) {
-    while(!children->IsEmpty()) {
-      Thread *child = (Thread*)children->Remove();
-      child->joinsem->P();
-      delete child;
-    }
-  }
-}
-
-#endif // CHANGED
 #endif // USER_PROGRAM
 
 

@@ -27,14 +27,16 @@ void syscall_halt(void)
 	interrupt->Halt ();
 }
 
+void do_syscall_exit(int s)
+{
+  DEBUG('a', "exiting with code %d\n", s);
+  interrupt->Halt();  
+}
+
 void syscall_exit(void)
 {
-	int ret = param(1);
-
-	currentThread->ReapChildren();
-
-	DEBUG('a', "exiting with code %d\n", ret);
-	interrupt->Halt();
+  int ret = param(1);
+  do_syscall_exit(ret);
 }
 
 void syscall_putchar(void)
@@ -124,9 +126,16 @@ void syscall_userthreadcreate(void)
   rtrn(ret);
 }
 
-void syscall_userthreadexit()
+void syscall_userthreadexit(void)
 {
   do_UserThreadExit();
 }
+
+void syscall_userthreadjoin(void)
+{
+  int tid = param(1);
+  do_UserThreadJoin(tid);
+}
+
 
 #endif /* SYSCALL_HANDLERS_H_ */

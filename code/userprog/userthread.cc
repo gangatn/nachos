@@ -1,5 +1,10 @@
 #include "userthread.h"
 #include "system.h"
+#include "syscall_handlers.h"
+#include <list>
+#include <queue>
+
+using namespace std;
 
 static void StartUserThread(int f)
 {
@@ -19,29 +24,34 @@ static void StartUserThread(int f)
 
 int do_UserThreadCreate(int f, int arg)
 {
-  /* update the number of threads in the process */
-  *(currentThread->threadcount) += 1;
-
   Thread *newThread = new Thread("userthread");
 
   /* pass the arg to the new thread */
   newThread->userarg = arg;
 
-  /* give the thread count to the new thread
-   * and set the tid for the new thread
-   */
+  /* give the available tids list to the new thread */
+  newThread->availabletids = currentThread->availabletids;
+
+  /* give the max tid to the new thread */
+  newThread->maxtid = currentThread->maxtid;
+
+  /* set the tid of the new thread */
+  if (newThread->availabletids->empty()) {
+    newThread->tid = *(newThread->maxtid);
+    *(currentThread->maxtid) += 1;
+  } else {
+    newThread->tid = newThread->availabletids->front();
+    newThread->availabletids->pop();
+  }
+
   newThread->threadcount = currentThread->threadcount;
-  newThread->tid = *(newThread->threadcount);
-
-
-  /* init the joining semaphore of the new thread */
-  newThread->joinsem = new Semaphore("semjoin", 0);
-  
-  if (!currentThread->children)
-    currentThread->children = new List();
+  *(newThread->threadcount) += 1;
 
   /* add the new thread in the thread list of the current thread */
-  currentThread->children->Append((void*)newThread);
+  currentThread->userthreads->push_back(newThread);
+
+  /* give the thread list to the new thread */
+  newThread->userthreads = currentThread->userthreads;
   
   newThread->Fork(StartUserThread, f);
 
@@ -50,10 +60,39 @@ int do_UserThreadCreate(int f, int arg)
 
 void do_UserThreadExit()
 {
-  currentThread->ReapChildren();
+  if (*(currentThread->threadcount) == 1) {
+    do_syscall_exit(0);
+  }
+
   currentThread->joinsem->V();
+  *(currentThread->threadcount) -= 1;
   currentThread->Sleep();
 
   /* never reached */
   ASSERT(FALSE);
+}
+
+void do_UserThreadJoin(int tid)
+{
+  list<Thread*> *userthreads = currentThread->userthreads;
+  list<Thread*>::iterator it;
+  Thread *t;
+
+  /* tid must be different than the current userthread tid */
+  if (tid == currentThread->tid)
+    return;
+
+  /* join the tid userthread */
+  for (it = userthreads->begin() ; it != userthreads->end() ; ++it) {
+    t = (*it);
+    if (t->tid == tid) {
+      t->joinsem->P(); // wait for the userthread to exit
+      userthreads->erase(it); // remove the userthread from the list
+      t->availabletids->push(t->tid); // make the tid available
+      delete t; // deallocate the userthread
+      return;
+    }
+  }
+
+  /* tid not found */
 }
