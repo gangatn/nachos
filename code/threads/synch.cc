@@ -119,7 +119,7 @@ Lock::Acquire ()
 {
 	IntStatus oldLevel = interrupt->SetLevel (IntOff);
 
-	assert(owner != currentThread);
+	ASSERT(owner != currentThread);
 
 	if(owner != NULL)
 	{
