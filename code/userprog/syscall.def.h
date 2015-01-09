@@ -63,3 +63,6 @@ SYSCALL_FUNC(GetChar, syscall_getchar, int)
 SYSCALL_PROC(GetString, syscall_getstring, char *s, int n)
 SYSCALL_PROC(PutInt, syscall_putint, int n)
 SYSCALL_PROC(GetInt, syscall_getint, int *n)
+
+SYSCALL_FUNC(UserThreadCreate, syscall_userthreadcreate, int, void (*f)(void*), void* arg)
+SYSCALL_PROC(UserThreadExit, syscall_userthreadexit)

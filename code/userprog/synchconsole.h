@@ -25,6 +25,8 @@ class SynchConsole
 
  private:
   Console *console;
+  Semaphore *writesem;
+  Semaphore  *readsem;
 };
 
 #endif

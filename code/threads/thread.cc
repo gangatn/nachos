@@ -46,6 +46,12 @@ Thread::Thread (const char *threadName)
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
 #endif
+
+#ifdef CHANGED
+#ifdef USER_PROGRAM
+    children = NULL;
+#endif
+#endif // CHANGED
 }
 
 //----------------------------------------------------------------------
@@ -67,6 +73,11 @@ Thread::~Thread ()
     ASSERT (this != currentThread);
     if (stack != NULL)
 	DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
+
+#ifdef CHANGED
+    delete joinsem;
+    delete children;
+#endif // CHANGED
 }
 
 //----------------------------------------------------------------------
@@ -408,6 +419,21 @@ Thread::RestoreUserState ()
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister (i, userRegisters[i]);
 }
-#endif
+
+#ifdef CHANGED
+
+void Thread::ReapChildren()
+{
+  if(children != NULL) {
+    while(!children->IsEmpty()) {
+      Thread *child = (Thread*)children->Remove();
+      child->joinsem->P();
+      delete child;
+    }
+  }
+}
+
+#endif // CHANGED
+#endif // USER_PROGRAM
 
 

@@ -116,7 +116,9 @@ ExceptionHandler (ExceptionType which)
 		{
 			handler_ptr handler = syscall_handlers[type];
 			if (handler != NULL) {
-				handler();
+			  IntStatus oldlevel = interrupt->SetLevel(IntOff);
+			  handler();
+			  interrupt->SetLevel(oldlevel);
 			}
 			else {
 				printf("No handler for syscall %i\n", type);

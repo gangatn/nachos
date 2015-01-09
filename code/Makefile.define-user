@@ -89,6 +89,6 @@ USERPROG_LIBS=start.S syscall.c
 # $(eval $(call define-flavor,final,userprog filesys network,\
 #     synchconsole.cc userthread.cc))
 
-$(eval $(call define-flavor,wip,userprog filesys-stub, synchconsole.cc))
+$(eval $(call define-flavor,wip,userprog filesys-stub, synchconsole.cc userthread.cc))
 
 USER_FLAVORS=wip
