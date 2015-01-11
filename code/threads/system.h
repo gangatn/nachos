@@ -1,8 +1,8 @@
-// system.h 
+// system.h
 //      All global variables used in Nachos are defined here.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #ifndef SYSTEM_H
@@ -19,6 +19,7 @@
 #ifdef CHANGED
 #ifdef USER_PROGRAM
 #include "synchconsole.h"
+#include "frameprovider.h"
 #endif // USER_PROGRAM
 
 #define MAX_STRING_SIZE 128
@@ -60,6 +61,7 @@ extern PostOffice *postOffice;
 #ifdef CHANGED
 #ifdef USER_PROGRAM
 extern SynchConsole *synchconsole;
+extern FrameProvider *frameprovider;
 #endif // USER_PROGRAM
 #endif // CHANGED
 
