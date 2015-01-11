@@ -20,7 +20,7 @@ static void StartUserThread(int f)
   /* Pass the arg to f*/
   machine->WriteRegister(4, currentThread->userarg);
   /* SP */
-  machine->WriteRegister(StackReg, (currentThread->space->getNumPages() - 3 * currentThread->tid ) * PageSize - 16);
+  machine->WriteRegister(StackReg, (machine->pageTableSize - 3 * currentThread->tid ) * PageSize - 16);
 
   machine->Run();
 }
