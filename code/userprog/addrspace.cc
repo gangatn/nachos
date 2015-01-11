@@ -57,16 +57,22 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
 	char *mem_buffer;
 	int written_data;
 
-	/*
-	 * We change *temporarly* the pageTable and pageTableSize to let the translate
-	 * engine make the work correctly
-	 */
+
+	// We need to *temporarly* change the machine pageTable and pageTableSize
+	// because when we call WriteMem, this will use the current pageTable
+	// and pageTableSize
 	machine->pageTable = pageTable;
 	machine->pageTableSize = numPages;
 
+	// If no memory is available, C++ will raise an exception
+	// We don't deal with this kind of issue here
 	mem_buffer = new char[numBytes];
 	executable->ReadAt(mem_buffer, numBytes, position);
 
+
+	// For obvious efficiency reason we write the buffer
+	// word by word, if the data size is not a multiple
+	// of 4 bytes, we write the remaining data
 	for(i = 0; i < numBytes; i += 4)
 	{
 		machine->WriteMem(virtualaddr + i, 4, *((int*)&mem_buffer[i]));
@@ -80,7 +86,7 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
 						  mem_buffer[written_data + i]);
 	}
 
-	/* We recover old machine state */
+	// We recover old machine state
 	machine->pageTable = saved_page_table;
 	machine->pageTableSize = saved_page_table_size;
 
