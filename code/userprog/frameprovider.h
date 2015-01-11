@@ -21,6 +21,10 @@ public:
 	// All bytes of the frame equals 0
 	int GetEmptyFrame();
 
+	// Return a valid physical frame that is
+	// a copy of the given frame
+	int GetCopiedFrame(int frame);
+
 	// Release the given frame
 	// This frame shall not be used again
 	// by the called
