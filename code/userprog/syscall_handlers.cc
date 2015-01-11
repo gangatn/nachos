@@ -8,17 +8,17 @@
  * Utility macro to get params and return value
  * --------------------------------------------
  *
- * param(n):
+ * PARAM(n):
  * ~~~~~~~~~
  * return the nth parameter, parameters starts from 1
  *
- * rtrn(val):
+ * RETURN(val):
  * ~~~~~~~~~~
  * return the given value
  */
 
-#define param(n) machine->ReadRegister((3+n))
-#define rtrn(val) machine->WriteRegister(2, (val))
+#define PARAM(n) machine->ReadRegister((3+n))
+#define RETURN(val) machine->WriteRegister(2, (val))
 
 void syscall_halt(void)
 {
@@ -30,18 +30,18 @@ void syscall_halt(void)
 void do_syscall_exit(int s)
 {
   DEBUG('a', "exiting with code %d\n", s);
-  interrupt->Halt();  
+  interrupt->Halt();
 }
 
 void syscall_exit(void)
 {
-  int ret = param(1);
+  int ret = PARAM(1);
   do_syscall_exit(ret);
 }
 
 void syscall_putchar(void)
 {
-	char ch = param(1);
+	char ch = PARAM(1);
 	synchconsole->SynchPutChar(ch);
 }
 
@@ -64,7 +64,7 @@ void copyStringFromMachine(int from, char *to, unsigned int size)
 
 void syscall_putstring(void)
 {
-	int mipsptr = param(1);
+	int mipsptr = PARAM(1);
 	char str[MAX_STRING_SIZE];
 
 	copyStringFromMachine(mipsptr, str, MAX_STRING_SIZE);
@@ -74,14 +74,14 @@ void syscall_putstring(void)
 void syscall_getchar(void)
 {
 	int ch = synchconsole->SynchGetChar();
-	rtrn(ch);
+	RETURN(ch);
 }
 
 void syscall_getstring(void)
 {
 	int i;
-	int addr = param(1);
-	int size = param(2);
+	int addr = PARAM(1);
+	int size = PARAM(2);
 	int ch;
 
 	ASSERT(size >= 0);
@@ -105,25 +105,25 @@ void syscall_getstring(void)
 
 void syscall_putint(void)
 {
-	int val = param(1);
+	int val = PARAM(1);
 	synchconsole->SynchPutInt(val);
 }
 
 void syscall_getint(void)
 {
 	int val;
-	int addr = param(1);
+	int addr = PARAM(1);
 	synchconsole->SynchGetInt(&val);
 	machine->WriteMem(addr, sizeof(val), val);
 }
 
 void syscall_userthreadcreate(void)
 {
-  int funcptr = param(1);
-  int argptr = param(2);
+  int funcptr = PARAM(1);
+  int argptr = PARAM(2);
 
   int ret = do_UserThreadCreate(funcptr, argptr);
-  rtrn(ret);
+  RETURN(ret);
 }
 
 void syscall_userthreadexit(void)
@@ -133,7 +133,7 @@ void syscall_userthreadexit(void)
 
 void syscall_userthreadjoin(void)
 {
-  int tid = param(1);
+  int tid = PARAM(1);
   do_UserThreadJoin(tid);
 }
 
