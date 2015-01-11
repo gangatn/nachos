@@ -17,7 +17,9 @@ FrameProvider::~FrameProvider()
 
 int FrameProvider::GetEmptyFrame()
 {
-	return bitmap.Find();
+	int frame = bitmap.Find();
+	bzero(&machine->mainMemory[frame*PageSize], PageSize);
+	return frame;
 }
 
 
