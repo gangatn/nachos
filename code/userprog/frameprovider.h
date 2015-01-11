@@ -11,7 +11,7 @@
 class FrameProvider
 {
 public:
-	FrameProvider(int frame_count);
+	FrameProvider();
 	~FrameProvider();
 
 	// Return a valid physical empty frame

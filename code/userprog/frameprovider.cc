@@ -1,8 +1,10 @@
 #include "frameprovider.h"
+#include "system.h"
+#include <strings.h>
 
 
-FrameProvider::FrameProvider(int frame_count)
-	: bitmap(frame_count)
+FrameProvider::FrameProvider()
+	: bitmap(NumPhysPages)
 {
 
 }
