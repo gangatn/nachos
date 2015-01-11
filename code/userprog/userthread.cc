@@ -16,7 +16,7 @@ static void StartUserThread(int f)
   machine->WriteRegister(NextPCReg, f+4);
   /* Set LR to Thread cleanup function
    * Statically located */
-  machine->WriteRegister(RetAddrReg, 12);
+  machine->WriteRegister(RetAddrReg, 16);
   /* Pass the arg to f*/
   machine->WriteRegister(4, currentThread->userarg);
   /* SP */
