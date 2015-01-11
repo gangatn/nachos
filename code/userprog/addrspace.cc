@@ -45,6 +45,50 @@ SwapHeader (NoffHeader * noffH)
     noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
 
+#ifdef CHANGED
+
+static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
+						  int numBytes, int position,
+						  TranslationEntry *pageTable, unsigned numPages)
+{
+	TranslationEntry *saved_page_table = machine->pageTable;
+	int saved_page_table_size = machine->pageTableSize;
+	int i;
+	char *mem_buffer;
+	int written_data;
+
+	/*
+	 * We change *temporarly* the pageTable and pageTableSize to let the translate
+	 * engine make the work correctly
+	 */
+	machine->pageTable = pageTable;
+	machine->pageTableSize = numPages;
+
+	mem_buffer = new char[numBytes];
+	executable->ReadAt(mem_buffer, numBytes, position);
+
+	for(i = 0; i < numBytes; i += 4)
+	{
+		machine->WriteMem(virtualaddr + i, 4, *((int*)&mem_buffer[i]));
+	}
+
+	written_data = (numBytes / 4)*4;
+
+	for(i = 0; i < numBytes % 4; i++)
+	{
+		machine->WriteMem(virtualaddr + written_data + i, 1,
+						  mem_buffer[written_data + i]);
+	}
+
+	/* We recover old machine state */
+	machine->pageTable = saved_page_table;
+	machine->pageTableSize = saved_page_table_size;
+
+	delete [] mem_buffer;
+}
+
+#endif /* CHANGED */
+
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
 //      Create an address space to run a user program.
