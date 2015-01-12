@@ -44,13 +44,14 @@
 #include "machine.h"
 #include "addrspace.h"
 
-#ifdef CHANGED
 #include "synch.h"
 #include <list>
 #include <queue>
-#endif //CHANGED
 
 #endif // USER_PROGRAM
+
+// Forward Semathore
+class Semaphore;
 
 // CPU register state to be saved on context switch.
 // The SPARC and MIPS only need 10 registers, but the Snake needs 18.

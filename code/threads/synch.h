@@ -19,7 +19,7 @@
 
 #include "copyright.h"
 #include "list.h"
-
+#include "thread.h"
 /* Forward declarations */
 class Thread;
 
@@ -89,8 +89,10 @@ class Lock
 
   private:
     const char *name;		// for debugging
-	List *queue;
+#ifdef CHANGED
+    List *queue;
 	Thread *owner;
+#endif
     // plus some other stuff you'll need to define
 };
 

@@ -1,3 +1,5 @@
+#ifdef CHANGED
+
 #include "userthread.h"
 #include "system.h"
 #include "syscall_handlers.h"
@@ -99,3 +101,5 @@ void do_UserThreadJoin(int tid)
 
   /* tid not found */
 }
+
+#endif
