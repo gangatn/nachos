@@ -6,6 +6,11 @@
 #ifndef PROCESS_MANAGER_H
 #define PROCESS_MANAGER_H
 
+#include "thread.h"
+#include "bitmap.h"
+
+#define MAX_PROCESS 65536
+
 class ProcessManager
 {
 public:
@@ -13,19 +18,20 @@ public:
 
 	~ProcessManager();
 
-	void Init(const char *filename, int pid, int ppid);
+	void Init(char *filename);
 
 	int Fork();
 
-	int Exit(int exit_code);
+	void Exit(int exit_code);
 
 	int WaitPid(int pid);
 
-	int Exec(const char *filename);
+	int Exec(char *filename);
 
 
 private:
-	void initProcess(Thread *thread);
+	BitMap pids;
+	void initProcess(Thread *thread, int pid, int ppid);
 };
 
 #endif /* PROCESS_MANAGER_H */
