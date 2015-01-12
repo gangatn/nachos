@@ -203,6 +203,39 @@ AddrSpace::~AddrSpace ()
   // End of modification
 }
 
+
+#ifdef CHANGED
+
+AddrSpace::AddrSpace (AddrSpace &space)
+{
+	unsigned int i;
+
+	numPages = space.numPages;
+	pageTable = new TranslationEntry[numPages];
+
+	for (i = 0; i < numPages; i++)
+	{
+		pageTable[i].virtualPage = i;
+
+		if(!space.pageTable[i].valid)
+		{
+			pageTable[i].physicalPage = 0;
+		}
+		else
+		{
+			pageTable[i].physicalPage =
+				frameprovider->GetCopiedFrame(space.pageTable[i].physicalPage);
+		}
+
+		pageTable[i].valid = space.pageTable[i].valid;
+		pageTable[i].use = space.pageTable[i].use;
+		pageTable[i].dirty = space.pageTable[i].dirty;
+		pageTable[i].readOnly = space.pageTable[i].readOnly;
+	}
+}
+
+#endif
+
 //----------------------------------------------------------------------
 // AddrSpace::InitRegisters
 //      Set the initial values for the user-level register set.
