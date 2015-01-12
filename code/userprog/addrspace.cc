@@ -187,6 +187,16 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 AddrSpace::~AddrSpace ()
 {
+	unsigned int i;
+	// We don't forget to release the frames
+	for (i = 0; i < numPages; i++)
+	{
+		if(pageTable[i].valid)
+		{
+			frameprovider->ReleaseFrame(pageTable[i].physicalPage);
+		}
+	}
+
   // LB: Missing [] for delete
   // delete pageTable;
   delete [] pageTable;
