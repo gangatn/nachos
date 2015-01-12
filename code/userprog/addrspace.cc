@@ -20,7 +20,6 @@
 #include "addrspace.h"
 #include "noff.h"
 
-
 //----------------------------------------------------------------------
 // SwapHeader
 //      Do little endian to big endian conversion on the bytes in the
@@ -138,7 +137,11 @@ AddrSpace::AddrSpace (OpenFile * executable)
     for (i = 0; i < numPages; i++)
       {
 	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+#ifndef CHANGED
+	  pageTable[i].physicalPage = i;
+#else    
 	  pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
+#endif
 	  pageTable[i].valid = TRUE;
 	  pageTable[i].use = FALSE;
 	  pageTable[i].dirty = FALSE;
@@ -187,6 +190,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 AddrSpace::~AddrSpace ()
 {
+#ifdef CHANGED
 	unsigned int i;
 	// We don't forget to release the frames
 	for (i = 0; i < numPages; i++)
@@ -196,7 +200,7 @@ AddrSpace::~AddrSpace ()
 			frameprovider->ReleaseFrame(pageTable[i].physicalPage);
 		}
 	}
-
+#endif // CHANGED
   // LB: Missing [] for delete
   // delete pageTable;
   delete [] pageTable;
