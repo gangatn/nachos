@@ -4,9 +4,12 @@
 #include <list>
 #include <queue>
 
-ProcessManager::ProcessManager()
-{
+using namespace std;
 
+ProcessManager::ProcessManager()
+	: pids(MAX_PROCESS)
+{
+	pids.Mark(0);
 }
 
 ProcessManager::~ProcessManager()
@@ -21,10 +24,10 @@ void ProcessManager::initProcess(Thread *th, int pid, int ppid)
 
 	th->tid = 0;
 
-	th->userThreads = new list<Thread*>;
-	th->userThreads->push_back(th);
+	th->userthreads = new list<Thread *>;
+	th->userthreads->push_back(th);
 
-	th->avaiabletids = new queue<int>;
+	th->availabletids = new queue<int>;
 
 	th->threadcount = new int;
 
@@ -32,7 +35,7 @@ void ProcessManager::initProcess(Thread *th, int pid, int ppid)
 
 }
 
-void ProcessManager::Init(const char *filename)
+void ProcessManager::Init(char *filename)
 {
 	OpenFile *executable = fileSystem->Open(filename);
 	AddrSpace *space;
@@ -44,8 +47,8 @@ void ProcessManager::Init(const char *filename)
 
 	space = new AddrSpace(executable);
 	currentThread->space = space;
-
-	initProcess(currentThread);
+	pids.Mark(1);
+	initProcess(currentThread, 1, 0);
 
 	delete executable;
 
@@ -58,30 +61,37 @@ void ProcessManager::Init(const char *filename)
 
 static void DoFork(int arg)
 {
-	// TODO:
-	//
-	// WE NEED TO RETURN THE VALUE 0
-	// AND ADVANCE PC
-	//
-	// SAME FOR LR
-	// SP SHOULD BE RESTORED
 	machine->Run();
 }
 
 int ProcessManager::Fork()
 {
-	AddrSpace *space = new AddrSpace(currentThread->space);
+	AddrSpace *space = new AddrSpace(*currentThread->space);
 	Thread *newThread = new Thread("user process");
 	int pid; // ALLOCATE PID
+	unsigned int i;
+
+	pid = pids.Find();
 
 	newThread->space = space;
 
-	initProcess(newThread);
+	initProcess(newThread, pid, 0);
+
+	for(i = 0; i < NumTotalRegs; i++)
+	{
+		newThread->userRegisters[i] = currentThread->userRegisters[i];
+	}
+
+	newThread->userRegisters[PCReg] += 4;
+	newThread->userRegisters[NextPCReg] += 4;
+	newThread->userRegisters[4] = 0; // We set the return value of zero
 
 	newThread->Fork(DoFork, 0);
+
+	return pid;
 }
 
-int ProcessManager::Exec(const char *filename)
+int ProcessManager::Exec(char *filename)
 {
 	OpenFile *executable = fileSystem->Open(filename);
 	AddrSpace *space;
@@ -95,17 +105,26 @@ int ProcessManager::Exec(const char *filename)
 
 	delete currentThread->space;
 
-	currentThread->space;
+	currentThread->space = space;
 
 	space->InitRegisters();
+	return 0;
 }
 
-int ProcessManager::Exit(int exit_code)
+void ProcessManager::Exit(int exit_code)
 {
-
+	pids.Clear(currentThread->pid);
+	if(pids.NumClear() >= MAX_PROCESS - 1)
+	{
+		interrupt->Halt();
+	}
+	else
+	{
+		currentThread->Finish();
+	}
 }
 
 int ProcessManager::WaitPid(int pid)
 {
-
+	return -1;
 }

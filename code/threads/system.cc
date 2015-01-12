@@ -45,6 +45,7 @@ PostOffice *postOffice;
 #ifdef USER_PROGRAM
 SynchConsole *synchconsole;
 FrameProvider *frameprovider;
+ProcessManager *processmanager;
 #endif // USER_PROGRAM
 #endif // CHANGED
 
@@ -171,6 +172,7 @@ Initialize (int argc, char **argv)
     machine = new Machine (debugUserProg);	// this must come first
 #ifdef CHANGED
 	frameprovider = new FrameProvider();
+	processmanager = new ProcessManager();
 #endif
 #endif
 

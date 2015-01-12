@@ -20,6 +20,7 @@
 #ifdef USER_PROGRAM
 #include "synchconsole.h"
 #include "frameprovider.h"
+#include "process_manager.h"
 #endif // USER_PROGRAM
 
 #define MAX_STRING_SIZE 128
@@ -62,6 +63,7 @@ extern PostOffice *postOffice;
 #ifdef USER_PROGRAM
 extern SynchConsole *synchconsole;
 extern FrameProvider *frameprovider;
+extern ProcessManager *processmanager;
 #endif // USER_PROGRAM
 #endif // CHANGED
 
