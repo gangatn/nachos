@@ -9,7 +9,6 @@ using namespace std;
 static void StartUserThread(int f)
 {
   currentThread->space->InitRegisters();
-  currentThread->space->RestoreState();
 
   /* Set PC to f */
   machine->WriteRegister(PCReg, f);
