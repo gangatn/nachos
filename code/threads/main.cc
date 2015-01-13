@@ -107,9 +107,11 @@ main (int argc, char **argv)
 		synchconsole = new SynchConsole(NULL, NULL);
 #endif // USER_PROGRAM
 #endif // CHANGED
+#ifndef CHANGED
 		StartProcess (*(argv + 1));
 		argCount = 2;
-#ifdef CHANGED
+#else // CHANGED
+		processmanager->Init(*(argv + 1));
 #ifdef USER_PROGRAM
 		delete synchconsole;
 #endif // USER_PROGRAM

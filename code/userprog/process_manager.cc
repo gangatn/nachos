@@ -84,7 +84,7 @@ int ProcessManager::Fork()
 
 	newThread->userRegisters[PCReg] += 4;
 	newThread->userRegisters[NextPCReg] += 4;
-	newThread->userRegisters[4] = 0; // We set the return value of zero
+	newThread->userRegisters[2] = 0; // We set the return value of zero
 
 	newThread->Fork(DoFork, 0);
 

@@ -14,5 +14,7 @@ void syscall_getint(void);
 void syscall_userthreadcreate(void);
 void syscall_userthreadexit(void);
 void syscall_userthreadjoin(void);
+void syscall_fork(void);
+void syscall_exec(void);
 
 #endif /* SYSCALL_HANDLERS_H_ */

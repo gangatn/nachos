@@ -55,14 +55,13 @@
  */
 SYSCALL_PROC(Halt, syscall_halt)
 SYSCALL_PROC(Exit, syscall_exit, int errcode)
-SYSCALL_FUNC(Exec, NULL, int, char *name)
+
 SYSCALL_FUNC(Join, NULL, int, int id)
 SYSCALL_PROC(Create, NULL, char *name)
 SYSCALL_FUNC(Open, NULL, int, char *name)
 SYSCALL_PROC(Write, NULL, char *buffer, int size, int file_id)
 SYSCALL_FUNC(Read, NULL, int, char *buffer, int size, int file_id)
 SYSCALL_PROC(Close, NULL, int file_id)
-SYSCALL_PROC(Fork, NULL, void (*func)(void))
 SYSCALL_PROC(Yield, NULL)
 
 SYSCALL_PROC(PutChar, syscall_putchar, char c)
@@ -75,3 +74,6 @@ SYSCALL_PROC(GetInt, syscall_getint, int *n)
 SYSCALL_FUNC(UserThreadCreate, syscall_userthreadcreate, int, void (*f)(void*), void* arg)
 SYSCALL_PROC(UserThreadExit, syscall_userthreadexit)
 SYSCALL_PROC(UserThreadJoin, syscall_userthreadjoin, int tid)
+
+SYSCALL_FUNC(Fork, syscall_fork, int)
+SYSCALL_FUNC(Exec, syscall_exec, int, char *s)

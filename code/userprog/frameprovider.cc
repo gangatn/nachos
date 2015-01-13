@@ -25,7 +25,7 @@ int FrameProvider::GetEmptyFrame()
 int FrameProvider::GetCopiedFrame(int copied_frame)
 {
 	int frame = bitmap.Find();
-	memcpy(&machine->mainMemory[frame], &machine->mainMemory[copied_frame], PageSize);
+	memcpy(&machine->mainMemory[frame*PageSize], &machine->mainMemory[copied_frame*PageSize], PageSize);
 	return frame;
 }
 

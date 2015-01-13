@@ -137,5 +137,25 @@ void syscall_userthreadjoin(void)
   do_UserThreadJoin(tid);
 }
 
+void syscall_fork(void)
+{
+  int pid;
 
+  pid = processmanager->Fork();  
+
+  RETURN(pid);
+}
+
+void syscall_exec(void)
+{
+  int sptr, ret;
+  char filename[MAX_STRING_SIZE];
+
+  sptr = PARAM(1);
+  copyStringFromMachine(sptr, filename, MAX_STRING_SIZE);
+
+  ret = processmanager->Exec(filename);
+
+  RETURN(ret);
+}
 #endif /* SYSCALL_HANDLERS_H_ */
