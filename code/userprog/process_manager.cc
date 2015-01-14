@@ -116,6 +116,45 @@ int ProcessManager::Exec(char *filename)
 	return 0;
 }
 
+/* DoForkExec
+ * Init the registers, restore the thread state in the machine
+ * and runs the thread
+ */
+static void DoForkExec(int arg)
+{
+  currentThread->space->InitRegisters();
+  currentThread->space->RestoreState();
+
+  machine->Run();
+
+  /* You *shall* never reach here! */
+  ASSERT(FALSE);
+}
+
+/* ForkExec
+ * Forks and exec the `filename` program
+ * Returns the process pid in the father
+ */
+int ProcessManager::ForkExec(char *filename)
+{
+  int pid;
+  Thread *newThread;
+  OpenFile *executable;
+  AddrSpace *space;
+
+  pid = pids.Find();
+  executable = fileSystem->Open(filename);
+  space = new AddrSpace(executable);
+  delete executable;
+  newThread = new Thread("user process");
+  newThread->space = space;
+
+  initProcess(newThread, pid, currentThread->pid);
+  newThread->Fork(DoForkExec, 0);
+
+  return pid;
+}
+
 void ProcessManager::Exit(int exit_code)
 {
 	pids.Clear(currentThread->pid);

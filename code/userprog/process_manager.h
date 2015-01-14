@@ -28,7 +28,7 @@ public:
 
 	int Exec(char *filename);
 
-
+	int ForkExec(char *filename);
 private:
 	BitMap pids;
 	void initProcess(Thread *thread, int pid, int ppid);

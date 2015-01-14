@@ -172,4 +172,18 @@ bool syscall_exec(void)
   RETURN(ret);
   return false;
 }
+
+bool syscall_forkexec(void)
+{
+  int sptr, pid;
+  char filename[MAX_STRING_SIZE];
+
+  sptr = PARAM(1);
+  copyStringFromMachine(sptr, filename, MAX_STRING_SIZE);
+  
+  pid = processmanager->ForkExec(filename);
+  
+  RETURN(pid);
+  return(true);
+}
 #endif /* SYSCALL_HANDLERS_H_ */

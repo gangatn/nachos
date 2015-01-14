@@ -2,13 +2,12 @@
 
 int main(void)
 {
-	int pid = Fork();
+  int pid;
 
-	if (pid == 0)
-		Exec("putstring");
-	else {
-		// PLZ WAIT FOR pid
-	}
+  pid = ForkExec("putstring");
+  
+  if (pid != 0)
+    PutString("I am the father\n");
 
-	return 0;
+  return 0;
 }

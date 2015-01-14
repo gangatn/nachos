@@ -77,3 +77,4 @@ SYSCALL_PROC(UserThreadJoin, syscall_userthreadjoin, int tid)
 
 SYSCALL_FUNC(Fork, syscall_fork, int)
 SYSCALL_FUNC(Exec, syscall_exec, int, char *s)
+SYSCALL_FUNC(ForkExec, syscall_forkexec, int, char *filename)
