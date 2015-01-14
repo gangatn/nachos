@@ -25,7 +25,7 @@ class AddrSpace
     // initializing it with the program
     // stored in the file "executable"
 #ifdef CHANGED
-	AddrSpace (AddrSpace &space); // Create an address space, copying the space
+	AddrSpace (AddrSpace *space); // Create an address space, copying the space
 #endif							  // Given in parameter
 
     ~AddrSpace ();		// De-allocate an address space

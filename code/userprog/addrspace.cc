@@ -210,31 +210,31 @@ AddrSpace::~AddrSpace ()
 
 #ifdef CHANGED
 
-AddrSpace::AddrSpace (AddrSpace &space)
+AddrSpace::AddrSpace (AddrSpace *space)
 {
 	unsigned int i;
 
-	numPages = space.numPages;
+	numPages = space->numPages;
 	pageTable = new TranslationEntry[numPages];
 
 	for (i = 0; i < numPages; i++)
 	{
 		pageTable[i].virtualPage = i;
 
-		if(!space.pageTable[i].valid)
+		if(!space->pageTable[i].valid)
 		{
 			pageTable[i].physicalPage = 0;
 		}
 		else
 		{
 			pageTable[i].physicalPage =
-				frameprovider->GetCopiedFrame(space.pageTable[i].physicalPage);
+				frameprovider->GetCopiedFrame(space->pageTable[i].physicalPage);
 		}
 
-		pageTable[i].valid = space.pageTable[i].valid;
-		pageTable[i].use = space.pageTable[i].use;
-		pageTable[i].dirty = space.pageTable[i].dirty;
-		pageTable[i].readOnly = space.pageTable[i].readOnly;
+		pageTable[i].valid = space->pageTable[i].valid;
+		pageTable[i].use = space->pageTable[i].use;
+		pageTable[i].dirty = space->pageTable[i].dirty;
+		pageTable[i].readOnly = space->pageTable[i].readOnly;
 	}
 }
 
@@ -256,7 +256,7 @@ AddrSpace::InitRegisters ()
     int i;
 
     for (i = 0; i < NumTotalRegs; i++)
-	machine->WriteRegister (i, 0);
+		machine->WriteRegister (i, 0);
 
     // Initial program counter -- must be location of "Start"
 	// TO BE SURE
