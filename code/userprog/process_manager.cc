@@ -33,6 +33,9 @@ void ProcessManager::initProcess(Thread *th, int pid, int ppid)
 
 	*(th->threadcount) = 1;
 
+	th->pid = pid;
+	th->ppid = ppid;
+
 }
 
 void ProcessManager::Init(char *filename)
@@ -75,14 +78,13 @@ int ProcessManager::Fork()
 
 	newThread->space = space;
 
-	initProcess(newThread, pid, 0);
-
+	initProcess(newThread, pid, currentThread->pid);
 	for(i = 0; i < NumTotalRegs; i++)
 	{
-		newThread->userRegisters[i] = currentThread->userRegisters[i];
+		newThread->userRegisters[i] = machine->ReadRegister(i);
 	}
 
-	newThread->userRegisters[PCReg] += 4;
+	newThread->userRegisters[PCReg] = newThread->userRegisters[NextPCReg];
 	newThread->userRegisters[NextPCReg] += 4;
 	newThread->userRegisters[2] = 0; // We set the return value of zero
 
@@ -98,7 +100,8 @@ int ProcessManager::Exec(char *filename)
 
 	if (executable == NULL)
 	{
-		ASSERT(FALSE && "Can't open init file, aborting\n");
+		puts("ERROR EXEC");
+		return -1;
 	}
 
 	space = new AddrSpace(executable);
@@ -108,12 +111,14 @@ int ProcessManager::Exec(char *filename)
 	currentThread->space = space;
 
 	space->InitRegisters();
+	space->RestoreState();
 	return 0;
 }
 
 void ProcessManager::Exit(int exit_code)
 {
 	pids.Clear(currentThread->pid);
+
 	if(pids.NumClear() >= MAX_PROCESS - 1)
 	{
 		interrupt->Halt();

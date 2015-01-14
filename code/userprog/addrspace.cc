@@ -139,7 +139,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
 #ifndef CHANGED
 	  pageTable[i].physicalPage = i;
-#else    
+#else
 	  pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
 #endif
 	  pageTable[i].valid = TRUE;
@@ -259,6 +259,7 @@ AddrSpace::InitRegisters ()
 	machine->WriteRegister (i, 0);
 
     // Initial program counter -- must be location of "Start"
+	// TO BE SURE
     machine->WriteRegister (PCReg, 0);
 
     // Need to also tell MIPS where next instruction is, because

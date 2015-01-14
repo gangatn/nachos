@@ -30,7 +30,7 @@ void syscall_halt(void)
 void do_syscall_exit(int s)
 {
   DEBUG('a', "exiting with code %d\n", s);
-  interrupt->Halt();
+  processmanager->Exit(s);
 }
 
 void syscall_exit(void)
@@ -141,7 +141,7 @@ void syscall_fork(void)
 {
   int pid;
 
-  pid = processmanager->Fork();  
+  pid = processmanager->Fork();
 
   RETURN(pid);
 }

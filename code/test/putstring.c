@@ -10,6 +10,5 @@ void merlin_says(char *s)
 int main()
 {
   merlin_says("Hockety Pockety Wockety Wack...");
-  Halt();
   return 0;
 }
