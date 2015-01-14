@@ -93,7 +93,10 @@ void
 ExceptionHandler (ExceptionType which)
 {
     int type = machine->ReadRegister (2);
-	bool shall_update_pc;
+#ifdef CHANGED
+    bool shall_update_pc;
+#endif
+
 #ifndef CHANGED
     if ((which == SyscallException) && (type == SC_Halt))
       {
@@ -135,8 +138,12 @@ ExceptionHandler (ExceptionType which)
 
 #endif // CHANGED
 
-    // LB: Do not forget to increment the pc before returning!
+#ifdef CHANGED
     if(shall_update_pc)
-		UpdatePC ();
+      UpdatePC ();
+#else
+    // LB: Do not forget to increment the pc before returning!
+    UpdatePC();
     // End of addition
+#endif
 }
