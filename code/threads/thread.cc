@@ -74,7 +74,9 @@ Thread::~Thread ()
 
 #ifdef CHANGED
     delete joinsem;
-	delete space;
+
+	// handle properly multiple threads
+	//delete space;
 #endif // CHANGED
 }
 
@@ -114,8 +116,10 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     // launching time. This is crucial if the thread is launched with
     // an already running program, as in the "fork" Unix system call.
 
+#ifndef CHANGED
     // LB: Observe that currentThread->space may be NULL at that time.
     this->space = currentThread->space;
+#endif // not CHANGED
 
 #endif // USER_PROGRAM
 

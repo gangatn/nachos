@@ -75,7 +75,6 @@ int ProcessManager::Fork()
 	unsigned int i;
 
 	pid = pids.Find();
-
 	newThread->space = space;
 
 	initProcess(newThread, pid, currentThread->pid);

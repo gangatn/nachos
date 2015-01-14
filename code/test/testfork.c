@@ -9,14 +9,9 @@ int main(void)
   pid = Fork();
 
   if (pid == 0)
-  {
     PutString("I am the child\n");
-  }
-  else {
+  else
     PutString("I am the father\n");
-  }
-
-  PutString("ok thx bye\n");
 
   return 0;
 }
