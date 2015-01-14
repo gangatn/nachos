@@ -69,7 +69,7 @@ static void DoFork(int arg)
 
 int ProcessManager::Fork()
 {
-	AddrSpace *space = new AddrSpace(*currentThread->space);
+	AddrSpace *space = new AddrSpace(currentThread->space);
 	Thread *newThread = new Thread("user process");
 	int pid; // ALLOCATE PID
 	unsigned int i;
@@ -100,18 +100,20 @@ int ProcessManager::Exec(char *filename)
 
 	if (executable == NULL)
 	{
-		puts("ERROR EXEC");
+		DEBUG('t', "ERROR EXEC\n");
 		return -1;
 	}
 
+	delete currentThread->space;
 	space = new AddrSpace(executable);
 
-	delete currentThread->space;
+	delete executable;
 
 	currentThread->space = space;
 
 	space->InitRegisters();
 	space->RestoreState();
+
 	return 0;
 }
 

@@ -67,7 +67,7 @@ UpdatePC ()
 
 #include "syscall_handlers.h"
 
-typedef void (*handler_ptr)(void);
+typedef bool (*handler_ptr)(void);
 
 #define SYSCALL_PROC(name, handler, ...)  handler,
 #define SYSCALL_FUNC(name, handler, type, ...)  handler,
@@ -93,7 +93,7 @@ void
 ExceptionHandler (ExceptionType which)
 {
     int type = machine->ReadRegister (2);
-
+	bool shall_update_pc;
 #ifndef CHANGED
     if ((which == SyscallException) && (type == SC_Halt))
       {
@@ -117,7 +117,7 @@ ExceptionHandler (ExceptionType which)
 			handler_ptr handler = syscall_handlers[type];
 			if (handler != NULL) {
 			  IntStatus oldlevel = interrupt->SetLevel(IntOff);
-			  handler();
+			  shall_update_pc = handler();
 			  interrupt->SetLevel(oldlevel);
 			}
 			else {
@@ -136,6 +136,7 @@ ExceptionHandler (ExceptionType which)
 #endif // CHANGED
 
     // LB: Do not forget to increment the pc before returning!
-    UpdatePC ();
+    if(shall_update_pc)
+		UpdatePC ();
     // End of addition
 }
