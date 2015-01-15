@@ -1,0 +1,43 @@
+NachOS : Copy on write optimisation
+====================================
+
+This document will explain the working of the copy on write optimisation.
+Why and how is has been implemented.
+
+Why?
+----
+
+The copy on write optimisation is useful when you want to fork the current
+process, the naive approach is to copy all the address space of the father
+process into the new one.  But this method implies some performance issues,
+in fact you might not want to write the whole address space, but you still
+want to read data (read only data like code, or unmodified variables).
+
+This induce big redundancy and memory waste.
+
+The idea of copy on write is: uppon fork, you set all the pages in readOnly
+mode for both parent and child and when one of them tries to write the memory
+you copy the affected page and permit write.
+
+How?
+----
+
+The first need is to have a frame provider knowing how many people actually use
+a given physical page.
+
+So the father won't release the physical page if the child need it.
+
+- Upon Fork(): we clone the address space we set the
+  readOnly flag for both father and child.
+
+- Upon ReadOnlyException: We check where the fault actually
+  occured, if it's in an usually write area (data for exemple)
+  we deduce that this was because of the CopyOnWrite.
+
+  If it's in a readOnly area, like code we send a Segmentation
+  fault
+
+- Upon the destruction of the address space, when need to tell the
+  frame provider that we don't use the physical pages anymore
+
+This approach also works well when you chain multiple Fork.
