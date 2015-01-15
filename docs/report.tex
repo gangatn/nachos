@@ -3,6 +3,7 @@
 % PACKAGES
 \usepackage[utf8]{inputenc}
 \usepackage[francais]{babel}
+\usepackage{enumitem}
 % --
 
 \title{NachOS Rapport}
@@ -10,9 +11,130 @@
 
 \begin{document}
 \maketitle
+
+\tableofcontents
+
 \chapter{Fonctionnalités}
+
+TODO...
+
 \chapter{Spécifications}
+
+\section{Appels systèmes de base}
+
+\begin{verbatim}
+void Halt();
+\end{verbatim}
+Arrête le système.
+
+\begin{verbatim}
+void  Exit(int status);
+\end{verbatim}
+Termine le processus courant. Retourne 
+\section{Entrées/Sorties}
+
+\subsection{Appels systèmes}
+
+\begin{verbatim}
+void PutChar( char c  );
+\end{verbatim}
+Permet d'écrire un caractère "c" sur la sortie standard. Cette appel est bloquant.
+
+\begin{verbatim}
+void PutString( char *str  );
+\end{verbatim}
+Permet d'écrire une chaine de caractère "str" donnée  sur la sortie standard. Cette appel est bloquant.
+
+\begin{verbatim}
+int GetChar (  );
+\end{verbatim}
+Permet de lire un caractère sur la sortie standard. Cette appel est bloquant. La valeur renvoyée est de type int pour permettre de faire la distinction entre  la valeur 255 non signée et la valeur -1 signée qui sont confondus sur un octet.
+
+\begin{verbatim}
+void GetString( char *s, int n  );
+\end{verbatim}
+Permet de lire une chaine de caractère "s" de taille  maximale "n" octets sur la sortie standard. Cette appel est bloquant. La taille donnée "n" ne peut être supérieur à 128.
+
+\begin{verbatim}
+void PutInt( int n  );
+\end{verbatim}
+Permet d'écrire un entier  "n" sur la sortie standard. Cette appel est bloquant.
+
+
+\begin{verbatim}
+void GetInt( int *n  );
+\end{verbatim}
+Permet de lire un entier  "n" depuis l'entrée standard. Cette appel est bloquant.
+
+\section{Threads utilisateurs}
+
+\subsection{Appels systèmes}
+
+\begin{verbatim}
+int UserThreadCreate ( void (*f)(void*), void* arg  );
+\end{verbatim}
+Crée un thread qui execute la fonction "f" avec l'argument "arg". Retourne l'id du thread dans le processus appelant. Pour l'instant, aucune erreur n'est retournée. Nous prevoyons de renvoyer une erreur dans le cas ou il n'y a plus de place dans l'espace réservée pour la pile utilisateur.
+
+\begin{verbatim}
+void UserThreadExit(  );
+\end{verbatim}
+Termine le thread courant.
+
+\begin{verbatim}
+void UserThreadJoin( int tid  );
+\end{verbatim}
+Attend la terminaison du thread avec le tid donnée.Cet appel est bloquant tant que le thread attendu n'est pas terminé.  Un appel à UserThreadJoin avec le tid du thread appelant retourne immédiatement, il n'y a pas d'effet de bord. Dans le cas où le tid ne correspond à aucun thread, la fonction retourne immédiatement. 
+
+\section{Processus utilisateurs}
+\subsection{Appels systèmes}
+
+\begin{verbatim}
+int Fork (  );
+\end{verbatim}
+Crée un nouveau processus en dupliquant le processus appelant. Dans le processus père, le pid du processus fils est retourné. Dans le processus fils, 0 est retourné. 
+Il n'y a pour le moment, pas de gestion d'erreur.
+
+\begin{verbatim}
+int Exec ( char *s  );
+\end{verbatim}
+Remplace le processus appelant par un nouveau processus. Ce nouveau processus représente un programme dont le chemin est donnée en paramètre.
+Cette fonction retourne -1 dans le cas ou l'executable n'a pas pu être chargé. Elle ne retourne ne rien sinon. Les autres cas d'erreur seront traité ultérieurement. 
+
+\begin{verbatim}
+int ForkExec ( char *filename  );
+\end{verbatim}
+Crée un nouveau processus à partir du programme donné et l'execute. Le pid du processus créé est retourné dans le père.
+Le père continue ensuite son exécution en parrallèle.
+
+
 \chapter{Tests utilisateurs}
+
+Programmes de test des threads :
+
+\begin{itemize}
+  \item testthreads : programme créant des threads et les attend
+  \item testthreads\_nojoin : programme créant des threads et qui ne les attend pas
+  \item testthreads\_noexit : programme créant des threads qui ne font pas d'appels à l'appel système UserThreadExit
+  \item testthreadsinthreads : programme créant des threads qui créent des threads
+\end{itemize}
+
+Programmes de test des processus :
+
+\begin{itemize}
+  \item testfork : programme créant un processus
+  \item testexec : programme appelant Exec
+  \item testforkandexec : programme créant un processus qui remplace son contexte par celui d'un autre programme avec l'appel à Exec
+  \item testforkexec : programme créant un processus avec le contexte d'un autre programme avec l'appel à ForkExec
+\end{itemize}
+
 \chapter{Commentaires}
+
+\section{Notes de développement}
+
+\begin{itemize}
+  \item Les processus créés ne sont pas attendus par le père. L'implémentation d'un Wait reste à faire.
+  \item Lors d'un appel système Exit, les threads doivent être arrêtés
+\end{itemize}
+
 
 \end{document}
