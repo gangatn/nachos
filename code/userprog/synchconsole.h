@@ -10,7 +10,7 @@
 
 class SynchConsole
 {
- public:
+public:
   SynchConsole(char *readFile, char *writeFile);
   ~SynchConsole();
   void SynchPutChar(const char ch);
@@ -23,12 +23,14 @@ class SynchConsole
   Semaphore *readAvail;
   Semaphore *writeDone;
 
- private:
+private:
   Console *console;
   Semaphore *writesem;
-  Semaphore  *readsem;
+  Semaphore *readsem;
+  Semaphore *wrStrSem;
+  Semaphore *reStrSem;
 };
 
-#endif
+#endif // SYNCHCONSOLE_H
 
-#endif
+#endif // CHANGED
