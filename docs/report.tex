@@ -3,6 +3,7 @@
 % PACKAGES
 \usepackage[utf8]{inputenc}
 \usepackage[francais]{babel}
+\usepackage{enumitem}
 % --
 
 \title{NachOS Rapport}
@@ -111,19 +112,19 @@ Le père continue ensuite son exécution en parrallèle.
 Programmes de test des threads :
 
 \begin{itemize}
-\item testthreads : programme créant des threads et les attend
-\item testthreads_nojoin : programme créant des threads et qui ne les attend pas
-\item testthreads_noexit : programme créant des threads qui ne font pas d'appels à l'appel système UserThreadExit
-\item testthreadsinthreads : programme créant des threads qui créent des threads
+  \item testthreads : programme créant des threads et les attend
+  \item testthreads\_nojoin : programme créant des threads et qui ne les attend pas
+  \item testthreads\_noexit : programme créant des threads qui ne font pas d'appels à l'appel système UserThreadExit
+  \item testthreadsinthreads : programme créant des threads qui créent des threads
 \end{itemize}
 
 Programmes de test des processus :
 
 \begin{itemize}
-\item testfork : programme créant un processus
-\item testexec : programme appelant Exec
-\item testforkandexec : programme créant un processus qui remplace son contexte par celui d'un autre programme avec l'appel à Exec
-\item testforkexec : programme créant un processus avec le contexte d'un autre programme avec l'appel à ForkExec
+  \item testfork : programme créant un processus
+  \item testexec : programme appelant Exec
+  \item testforkandexec : programme créant un processus qui remplace son contexte par celui d'un autre programme avec l'appel à Exec
+  \item testforkexec : programme créant un processus avec le contexte d'un autre programme avec l'appel à ForkExec
 \end{itemize}
 
 \chapter{Commentaires}
@@ -131,8 +132,8 @@ Programmes de test des processus :
 \section{Notes de développement}
 
 \begin{itemize}
-\item Les processus créés ne sont pas attendus par le père. L'implémentation d'un Wait reste à faire.
-\item Lors d'un appel système Exit, les threads doivent être arrêtés
+  \item Les processus créés ne sont pas attendus par le père. L'implémentation d'un Wait reste à faire.
+  \item Lors d'un appel système Exit, les threads doivent être arrêtés
 \end{itemize}
 
 
