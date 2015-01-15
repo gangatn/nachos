@@ -30,17 +30,16 @@
 static void
 SwapHeader (NoffHeader * noffH)
 {
-    noffH->noffMagic = WordToHost (noffH->noffMagic);
-    noffH->code.size = WordToHost (noffH->code.size);
-    noffH->code.virtualAddr = WordToHost (noffH->code.virtualAddr);
-    noffH->code.inFileAddr = WordToHost (noffH->code.inFileAddr);
-    noffH->initData.size = WordToHost (noffH->initData.size);
-    noffH->initData.virtualAddr = WordToHost (noffH->initData.virtualAddr);
-    noffH->initData.inFileAddr = WordToHost (noffH->initData.inFileAddr);
-    noffH->uninitData.size = WordToHost (noffH->uninitData.size);
-    noffH->uninitData.virtualAddr =
-	WordToHost (noffH->uninitData.virtualAddr);
-    noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
+	noffH->noffMagic = WordToHost (noffH->noffMagic);
+	noffH->code.size = WordToHost (noffH->code.size);
+	noffH->code.virtualAddr = WordToHost (noffH->code.virtualAddr);
+	noffH->code.inFileAddr = WordToHost (noffH->code.inFileAddr);
+	noffH->initData.size = WordToHost (noffH->initData.size);
+	noffH->initData.virtualAddr = WordToHost (noffH->initData.virtualAddr);
+	noffH->initData.inFileAddr = WordToHost (noffH->initData.inFileAddr);
+	noffH->uninitData.size = WordToHost (noffH->uninitData.size);
+	noffH->uninitData.virtualAddr = WordToHost (noffH->uninitData.virtualAddr);
+	noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
 
 #ifdef CHANGED
