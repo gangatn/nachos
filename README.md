@@ -6,7 +6,7 @@ Progression
 - assignments
   - [x] IOs
   - [x] Multithreading
-  - [ ] Virtual Memory
+  - [x] Virtual Memory
   - [ ] File system
   - [ ] Network
 - extras
@@ -22,14 +22,19 @@ Once the MIPS compiler installed if needed, check out the README.Makefiles
 to configure the build an have an overview of the architecture
 
 then go to the code directory, from here you can execute the following command:
+```bash
 $ make
+```
 
 This will make both our flavor and original ones.
 If you want to build only our flavor type:
-
+```bash
 $ make all
+```
 or
+```bash
 $ make build
+```
 
 If you want to build only original flavor type:
 $ make origin
