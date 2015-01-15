@@ -25,13 +25,32 @@ public:
     // initializing it with the program
     // stored in the file "executable"
 #ifdef CHANGED
-	AddrSpace (AddrSpace *space); // Create an address space, copying the space
-#endif							  // Given in parameter
+    // Create an address space from an existing one (given as space
+    // parameter), if copy_on_write equals true, then
+    // both all pages of both address space are switch in copy on write mode
+    // This means that if a page is written, this will generate a pagefault
+    // and the frame will be copied for write use
+	AddrSpace (AddrSpace *space, bool copy_on_write);
+#endif
 
     ~AddrSpace ();		// De-allocate an address space
 
     void InitRegisters ();	// Initialize user-level CPU registers,
     // before jumping to user code
+
+#ifdef CHANGED
+	// HandleReadOnly:
+	//
+	// This function should be called when we get a ReadOnlyException
+	// This function will determines wheter the fault occur in a copy
+	// on write virtual page, if so, this will get a new physical frame
+	// copied from the read only frame and return true
+	//
+	// If the ReadOnlyException occur in a location where the program
+	// isn't supposed to write, nothing is done and the function return
+	// false
+	bool HandleReadOnly(int virt_addr);
+#endif // CHANGED
 
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch

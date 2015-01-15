@@ -209,7 +209,7 @@ AddrSpace::~AddrSpace ()
 
 #ifdef CHANGED
 
-AddrSpace::AddrSpace (AddrSpace *space)
+AddrSpace::AddrSpace (AddrSpace *space, bool copy_on_write)
 {
 	unsigned int i;
 
@@ -220,21 +220,66 @@ AddrSpace::AddrSpace (AddrSpace *space)
 	{
 		pageTable[i].virtualPage = i;
 
-		if(!space->pageTable[i].valid)
-		{
-			pageTable[i].physicalPage = 0;
-		}
-		else
-		{
-			pageTable[i].physicalPage =
-				frameprovider->GetCopiedFrame(space->pageTable[i].physicalPage);
-		}
-
 		pageTable[i].valid = space->pageTable[i].valid;
 		pageTable[i].use = space->pageTable[i].use;
 		pageTable[i].dirty = space->pageTable[i].dirty;
-		pageTable[i].readOnly = space->pageTable[i].readOnly;
+
+		if(pageTable[i].valid)
+		{
+			if (copy_on_write)
+			{
+				pageTable[i].physicalPage = space->pageTable[i].physicalPage;
+				frameprovider->UseFrame(pageTable[i].physicalPage);
+			}
+			else
+			{
+				pageTable[i].physicalPage =
+					frameprovider->GetCopiedFrame(
+						space->pageTable[i].physicalPage);
+			}
+		}
+
+		if(copy_on_write)
+		{
+			pageTable[i].readOnly = true;
+			space->pageTable[i].readOnly = true;
+		}
+		else
+		{
+			pageTable[i].readOnly = space->pageTable[i].readOnly;
+		}
 	}
+}
+
+bool AddrSpace::HandleReadOnly(int vaddr)
+{
+	unsigned vp = vaddr / PageSize;
+
+	if(pageTable[vp].valid && vp >= 0 && vp < numPages)
+	{
+		int new_frame = frameprovider->GetCopiedFrame(
+			pageTable[vp].physicalPage);
+
+		// JD: Maybe we should handle a special case when we don't have memory
+		// anymore? maybe use swap but this should IMHO be integrated in the frameprovider
+		//
+		// For now we just return false but this kind of error should not be ignored
+		//
+		// Since we don't have an heap yet, and code is not read only
+		// We assume that we are in a CopyOnWrite case
+
+		if (new_frame >= 0)
+		{
+			// We tell the frame provider that we no longer use this frame
+			// and we set the freshly copied frame
+			// We do not forget to permit write
+			frameprovider->ReleaseFrame(pageTable[vp].physicalPage);
+			pageTable[vp].physicalPage = new_frame;
+			pageTable[vp].readOnly = false;
+			return true;
+		}
+	}
+	return false;
 }
 
 #endif

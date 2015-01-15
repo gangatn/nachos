@@ -80,9 +80,9 @@ typedef bool (*handler_ptr)(void);
  * but this is negligible in our case.
  */
 handler_ptr syscall_handlers[SYSCALL_COUNT] =
-	{
+{
 #include "syscall.def.h"
-	};
+};
 
 #undef SYSCALL_PROC
 #undef SYSCALL_PROC
@@ -99,38 +99,63 @@ ExceptionHandler (ExceptionType which)
 
 #ifndef CHANGED
     if ((which == SyscallException) && (type == SC_Halt))
-      {
-	  DEBUG ('a', "Shutdown, initiated by user program.\n");
-	  interrupt->Halt ();
-      }
+	{
+		DEBUG ('a', "Shutdown, initiated by user program.\n");
+		interrupt->Halt ();
+	}
     else
-      {
-	  printf ("Unexpected user mode exception %d %d\n", which, type);
-	  ASSERT (FALSE);
-      }
+	{
+		printf ("Unexpected user mode exception %d %d\n", which, type);
+		ASSERT (FALSE);
+	}
 #else // CHANGED
 	if (which == SyscallException) {
 
-		if(type < 0 || type >= SYSCALL_COUNT) {
+		if(type < 0 || type >= SYSCALL_COUNT)
+		{
 			printf("Invalid system call #%i\n", type);
 			ASSERT(FALSE);
 		}
 		else
 		{
 			handler_ptr handler = syscall_handlers[type];
-			if (handler != NULL) {
-			  IntStatus oldlevel = interrupt->SetLevel(IntOff);
-			  shall_update_pc = handler();
-			  interrupt->SetLevel(oldlevel);
+			if (handler != NULL)
+			{
+				IntStatus oldlevel = interrupt->SetLevel(IntOff);
+				shall_update_pc = handler();
+				interrupt->SetLevel(oldlevel);
 			}
-			else {
+			else
+			{
 				printf("No handler for syscall %i\n", type);
 				ASSERT(FALSE);
 			}
 		}
 
 	}
-	else {
+	else if (which == ReadOnlyException)
+	{
+		unsigned guilty_vaddr = machine->ReadRegister(BadVAddrReg);
+
+		if (currentThread->space->HandleReadOnly(guilty_vaddr))
+		{
+			DEBUG('a', "Read only exception at a CopyOnWrite location");
+		}
+		else
+		{
+			// JD: For now we do not handle this case, we simply
+			// crash the system, a better solution would be:
+			// If we have a signal system, send a SIGSEGV
+			// If we don't, kill the process and don't stop the system
+			printf("Write not allowed at virtual adress %i\n", guilty_vaddr);
+			ASSERT(false);
+		}
+
+		// Now we will retry to execute the instruction
+		shall_update_pc = false;
+	}
+	else
+	{
 		printf ("Unexpected user mode exception %d %d\n", which, type);
 		ASSERT (FALSE);
 	}

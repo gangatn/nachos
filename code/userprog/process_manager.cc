@@ -69,7 +69,7 @@ static void DoFork(int arg)
 
 int ProcessManager::Fork()
 {
-	AddrSpace *space = new AddrSpace(currentThread->space);
+	AddrSpace *space = new AddrSpace(currentThread->space, true);
 	Thread *newThread = new Thread("user process");
 	int pid; // ALLOCATE PID
 	unsigned int i;
