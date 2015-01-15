@@ -1,9 +1,9 @@
-// addrspace.cc 
+// addrspace.cc
 //      Routines to manage address spaces (executing user programs).
 //
 //      In order to run a user program, you must:
 //
-//      1. link with the -N -T 0 option 
+//      1. link with the -N -T 0 option
 //      2. run coff2noff to convert the object file to Nachos format
 //              (Nachos object code format is essentially just a simpler
 //              version of the UNIX executable object code format)
@@ -12,7 +12,7 @@
 //              don't need to do this last step)
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -20,11 +20,9 @@
 #include "addrspace.h"
 #include "noff.h"
 
-#include <strings.h>		/* for bzero */
-
 //----------------------------------------------------------------------
 // SwapHeader
-//      Do little endian to big endian conversion on the bytes in the 
+//      Do little endian to big endian conversion on the bytes in the
 //      object file header, in case the file was generated on a little
 //      endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
@@ -45,6 +43,56 @@ SwapHeader (NoffHeader * noffH)
     noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
 
+#ifdef CHANGED
+
+static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
+						  int numBytes, int position,
+						  TranslationEntry *pageTable, unsigned numPages)
+{
+	TranslationEntry *saved_page_table = machine->pageTable;
+	int saved_page_table_size = machine->pageTableSize;
+	int i;
+	char *mem_buffer;
+	int written_data;
+
+
+	// We need to *temporarly* change the machine pageTable and pageTableSize
+	// because when we call WriteMem, this will use the current pageTable
+	// and pageTableSize
+	machine->pageTable = pageTable;
+	machine->pageTableSize = numPages;
+
+	// If no memory is available, C++ will raise an exception
+	// We don't deal with this kind of issue here
+	mem_buffer = new char[numBytes];
+	executable->ReadAt(mem_buffer, numBytes, position);
+
+
+	// For obvious efficiency reason we write the buffer
+	// word by word, if the data size is not a multiple
+	// of 4 bytes, we write the remaining data
+	for(i = 0; i < numBytes; i += 4)
+	{
+		machine->WriteMem(virtualaddr + i, 4, *((int*)&mem_buffer[i]));
+	}
+
+	written_data = (numBytes / 4)*4;
+
+	for(i = 0; i < numBytes % 4; i++)
+	{
+		machine->WriteMem(virtualaddr + written_data + i, 1,
+						  mem_buffer[written_data + i]);
+	}
+
+	// We recover old machine state
+	machine->pageTable = saved_page_table;
+	machine->pageTableSize = saved_page_table_size;
+
+	delete [] mem_buffer;
+}
+
+#endif /* CHANGED */
+
 //----------------------------------------------------------------------
 // AddrSpace::AddrSpace
 //      Create an address space to run a user program.
@@ -53,7 +101,7 @@ SwapHeader (NoffHeader * noffH)
 //
 //      Assumes that the object code file is in NOFF format.
 //
-//      First, set up the translation from program memory to physical 
+//      First, set up the translation from program memory to physical
 //      memory.  For now, this is really simple (1:1), since we are
 //      only uniprogramming, and we have a single unsegmented page table
 //
@@ -84,40 +132,53 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
 	   numPages, size);
-// first, set up the translation 
+// first, set up the translation
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++)
       {
 	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+#ifndef CHANGED
 	  pageTable[i].physicalPage = i;
+#else
+	  pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
+#endif
 	  pageTable[i].valid = TRUE;
 	  pageTable[i].use = FALSE;
 	  pageTable[i].dirty = FALSE;
-	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on 
-	  // a separate page, we could set its 
+	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on
+	  // a separate page, we could set its
 	  // pages to be read-only
       }
-
-// zero out the entire address space, to zero the unitialized data segment 
-// and the stack segment
-    bzero (machine->mainMemory, size);
 
 // then, copy in the code and data segments into memory
     if (noffH.code.size > 0)
       {
 	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
 		 noffH.code.virtualAddr, noffH.code.size);
+#ifndef CHANGED
 	  executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
-			      noffH.code.size, noffH.code.inFileAddr);
+						  noffH.code.size, noffH.code.inFileAddr);
+#else
+	  ReadAtVirtual(executable, noffH.code.virtualAddr,
+					noffH.code.size, noffH.code.inFileAddr,
+					pageTable, numPages);
+#endif
       }
     if (noffH.initData.size > 0)
       {
 	  DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
 		 noffH.initData.virtualAddr, noffH.initData.size);
+
+#ifndef CHANGED
 	  executable->ReadAt (&
-			      (machine->mainMemory
-			       [noffH.initData.virtualAddr]),
-			      noffH.initData.size, noffH.initData.inFileAddr);
+						  (machine->mainMemory
+						   [noffH.initData.virtualAddr]),
+						  noffH.initData.size, noffH.initData.inFileAddr);
+#else
+	  ReadAtVirtual(executable, noffH.initData.virtualAddr,
+					noffH.initData.size, noffH.initData.inFileAddr,
+					pageTable, numPages);
+#endif
       }
 
 }
@@ -129,11 +190,55 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
 AddrSpace::~AddrSpace ()
 {
+#ifdef CHANGED
+	unsigned int i;
+	// We don't forget to release the frames
+	for (i = 0; i < numPages; i++)
+	{
+		if(pageTable[i].valid)
+		{
+			frameprovider->ReleaseFrame(pageTable[i].physicalPage);
+		}
+	}
+#endif // CHANGED
   // LB: Missing [] for delete
   // delete pageTable;
   delete [] pageTable;
   // End of modification
 }
+
+
+#ifdef CHANGED
+
+AddrSpace::AddrSpace (AddrSpace *space)
+{
+	unsigned int i;
+
+	numPages = space->numPages;
+	pageTable = new TranslationEntry[numPages];
+
+	for (i = 0; i < numPages; i++)
+	{
+		pageTable[i].virtualPage = i;
+
+		if(!space->pageTable[i].valid)
+		{
+			pageTable[i].physicalPage = 0;
+		}
+		else
+		{
+			pageTable[i].physicalPage =
+				frameprovider->GetCopiedFrame(space->pageTable[i].physicalPage);
+		}
+
+		pageTable[i].valid = space->pageTable[i].valid;
+		pageTable[i].use = space->pageTable[i].use;
+		pageTable[i].dirty = space->pageTable[i].dirty;
+		pageTable[i].readOnly = space->pageTable[i].readOnly;
+	}
+}
+
+#endif
 
 //----------------------------------------------------------------------
 // AddrSpace::InitRegisters
@@ -151,9 +256,10 @@ AddrSpace::InitRegisters ()
     int i;
 
     for (i = 0; i < NumTotalRegs; i++)
-	machine->WriteRegister (i, 0);
+		machine->WriteRegister (i, 0);
 
     // Initial program counter -- must be location of "Start"
+	// TO BE SURE
     machine->WriteRegister (PCReg, 0);
 
     // Need to also tell MIPS where next instruction is, because

@@ -2,17 +2,20 @@
 #define SYSCALL_HANDLERS_H_
 
 
-void syscall_halt(void);
-void do_syscall_exit(int s);
-void syscall_exit(void);
-void syscall_putchar(void);
-void syscall_putstring(void);
-void syscall_getchar(void);
-void syscall_getstring(void);
-void syscall_putint(void);
-void syscall_getint(void);
-void syscall_userthreadcreate(void);
-void syscall_userthreadexit(void);
-void syscall_userthreadjoin(void);
+bool syscall_halt(void);
+bool do_syscall_exit(int s);
+bool syscall_exit(void);
+bool syscall_putchar(void);
+bool syscall_putstring(void);
+bool syscall_getchar(void);
+bool syscall_getstring(void);
+bool syscall_putint(void);
+bool syscall_getint(void);
+bool syscall_userthreadcreate(void);
+bool syscall_userthreadexit(void);
+bool syscall_userthreadjoin(void);
+bool syscall_fork(void);
+bool syscall_exec(void);
+bool syscall_forkexec(void);
 
 #endif /* SYSCALL_HANDLERS_H_ */

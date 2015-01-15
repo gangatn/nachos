@@ -1,3 +1,5 @@
+#ifdef CHANGED
+
 #include "userthread.h"
 #include "system.h"
 #include "syscall_handlers.h"
@@ -37,6 +39,9 @@ int do_UserThreadCreate(int f, int arg)
   /* give the max tid to the new thread */
   newThread->maxtid = currentThread->maxtid;
 
+  newThread->pid = currentThread->pid;
+  newThread->ppid = currentThread->ppid;
+
   /* set the tid of the new thread */
   if (newThread->availabletids->empty()) {
     newThread->tid = *(newThread->maxtid);
@@ -54,6 +59,8 @@ int do_UserThreadCreate(int f, int arg)
 
   /* give the thread list to the new thread */
   newThread->userthreads = currentThread->userthreads;
+
+  newThread->space = currentThread->space;
 
   newThread->Fork(StartUserThread, f);
 
@@ -98,3 +105,5 @@ void do_UserThreadJoin(int tid)
 
   /* tid not found */
 }
+
+#endif
