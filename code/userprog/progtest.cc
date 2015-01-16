@@ -1,11 +1,11 @@
-// progtest.cc 
+// progtest.cc
 //      Test routines for demonstrating that Nachos can load
-//      a user program and execute it.  
+//      a user program and execute it.
 //
 //      Also, routines for testing the Console hardware device.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -29,16 +29,14 @@ using namespace std;
 //----------------------------------------------------------------------
 
 void
-StartProcess (char *filename)
-{
+StartProcess (char *filename) {
     OpenFile *executable = fileSystem->Open (filename);
     AddrSpace *space;
 
-    if (executable == NULL)
-      {
-	  printf ("Unable to open file %s\n", filename);
-	  return;
-      }
+    if (executable == NULL) {
+        printf ("Unable to open file %s\n", filename);
+        return;
+    }
     space = new AddrSpace (executable);
     currentThread->space = space;
 
@@ -61,13 +59,13 @@ StartProcess (char *filename)
     *(currentThread->threadcount) = 1;
 #endif // CHANGED
 
-    delete executable;		// close file
+    delete executable;      // close file
 
-    space->InitRegisters ();	// set the initial register values
-    space->RestoreState ();	// load page table register
+    space->InitRegisters ();    // set the initial register values
+    space->RestoreState (); // load page table register
 
-    machine->Run ();		// jump to the user progam
-    ASSERT (FALSE);		// machine->Run never returns;
+    machine->Run ();        // jump to the user progam
+    ASSERT (FALSE);     // machine->Run never returns;
     // the address space exits
     // by doing the syscall "exit"
 }
@@ -85,13 +83,11 @@ static Semaphore *writeDone;
 //----------------------------------------------------------------------
 
 static void
-ReadAvail (int arg)
-{
+ReadAvail (int arg) {
     readAvail->V ();
 }
 static void
-WriteDone (int arg)
-{
+WriteDone (int arg) {
     writeDone->V ();
 }
 
@@ -102,8 +98,7 @@ WriteDone (int arg)
 //----------------------------------------------------------------------
 
 void
-ConsoleTest (char *in, char *out)
-{
+ConsoleTest (char *in, char *out) {
     char ch;
 
     console = new Console (in, out, ReadAvail, WriteDone, 0);
@@ -111,42 +106,39 @@ ConsoleTest (char *in, char *out)
     writeDone = new Semaphore ("write done", 0);
 
 #ifndef CHANGED
-    for (;;)
-      {
-          readAvail->P ();      // wait for character to arrive
-          ch = console->GetChar ();
-          console->PutChar (ch);        // echo it!
-          writeDone->P ();      // wait for write to finish
-	  if (ch == 'q')
-	    return;           // if q, quit
-      }
+    for (;;) {
+        readAvail->P ();      // wait for character to arrive
+        ch = console->GetChar ();
+        console->PutChar (ch);        // echo it!
+        writeDone->P ();      // wait for write to finish
+        if (ch == 'q')
+            return;           // if q, quit
+    }
 #else // CHANGED
-    for (;;)
-      {
-	  readAvail->P ();	// wait for character to arrive
-	  ch = console->GetChar ();
-	  if (ch != '\n') {
-	    console->PutChar('<');
-	    writeDone->P();
-	  }
-	  console->PutChar (ch);	// echo it!
-	  writeDone->P ();	// wait for write to finish
-	  if (ch != '\n') {
-	    console->PutChar('>');
-	    writeDone->P();
-	  }
-	  if (ch == 'q' || ch == EOF)
-	      return;		// if q, quit
-      }
+    for (;;) {
+        readAvail->P ();  // wait for character to arrive
+        ch = console->GetChar ();
+        if (ch != '\n') {
+            console->PutChar('<');
+            writeDone->P();
+        }
+        console->PutChar (ch);    // echo it!
+        writeDone->P ();  // wait for write to finish
+        if (ch != '\n') {
+            console->PutChar('>');
+            writeDone->P();
+        }
+        if (ch == 'q' || ch == EOF)
+            return;       // if q, quit
+    }
 #endif // CHANGED
 }
 
 #ifdef CHANGED
-void SynchConsoleTest(char *in, char *out)
-{
-  char ch;
+void SynchConsoleTest(char *in, char *out) {
+    char ch;
 
-  while ((ch = synchconsole->SynchGetChar()) != EOF)
-    synchconsole->SynchPutChar(ch);
+    while ((ch = synchconsole->SynchGetChar()) != EOF)
+        synchconsole->SynchPutChar(ch);
 }
 #endif // CHANGED

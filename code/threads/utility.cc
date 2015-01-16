@@ -1,9 +1,9 @@
-// utility.cc 
-//      Debugging routines.  Allows users to control whether to 
+// utility.cc
+//      Debugging routines.  Allows users to control whether to
 //      print DEBUG statements, based on a command line argument.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -17,22 +17,21 @@
 #include "/usr/include/stdarg.h"
 #endif
 
-static const char *enableFlags = NULL;	// controls which DEBUG messages are printed 
+static const char *enableFlags = NULL;  // controls which DEBUG messages are printed
 
 //----------------------------------------------------------------------
 // DebugInit
-//      Initialize so that only DEBUG messages with a flag in flagList 
+//      Initialize so that only DEBUG messages with a flag in flagList
 //      will be printed.
 //
 //      If the flag is "+", we enable all DEBUG messages.
 //
-//      "flagList" is a string of characters for whose DEBUG messages are 
+//      "flagList" is a string of characters for whose DEBUG messages are
 //              to be enabled.
 //----------------------------------------------------------------------
 
 void
-DebugInit (const char *flagList)
-{
+DebugInit (const char *flagList) {
     enableFlags = flagList;
 }
 
@@ -42,13 +41,12 @@ DebugInit (const char *flagList)
 //----------------------------------------------------------------------
 
 bool
-DebugIsEnabled (char flag)
-{
+DebugIsEnabled (char flag) {
     if (enableFlags != NULL)
-	return (strchr (enableFlags, flag) != 0)
-	    || (strchr (enableFlags, '+') != 0);
+        return (strchr (enableFlags, flag) != 0)
+               || (strchr (enableFlags, '+') != 0);
     else
-	return FALSE;
+        return FALSE;
 }
 
 //----------------------------------------------------------------------
@@ -58,15 +56,13 @@ DebugIsEnabled (char flag)
 //----------------------------------------------------------------------
 
 void
-DEBUG (char flag, const char *format, ...)
-{
-    if (DebugIsEnabled (flag))
-      {
-	  va_list ap;
-	  // You will get an unused variable message here -- ignore it.
-	  va_start (ap, format);
-	  vfprintf (stdout, format, ap);
-	  va_end (ap);
-	  fflush (stdout);
-      }
+DEBUG (char flag, const char *format, ...) {
+    if (DebugIsEnabled (flag)) {
+        va_list ap;
+        // You will get an unused variable message here -- ignore it.
+        va_start (ap, format);
+        vfprintf (stdout, format, ap);
+        va_end (ap);
+        fflush (stdout);
+    }
 }

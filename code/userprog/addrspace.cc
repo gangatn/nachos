@@ -28,66 +28,62 @@
 //----------------------------------------------------------------------
 
 static void
-SwapHeader (NoffHeader * noffH)
-{
-	noffH->noffMagic = WordToHost (noffH->noffMagic);
-	noffH->code.size = WordToHost (noffH->code.size);
-	noffH->code.virtualAddr = WordToHost (noffH->code.virtualAddr);
-	noffH->code.inFileAddr = WordToHost (noffH->code.inFileAddr);
-	noffH->initData.size = WordToHost (noffH->initData.size);
-	noffH->initData.virtualAddr = WordToHost (noffH->initData.virtualAddr);
-	noffH->initData.inFileAddr = WordToHost (noffH->initData.inFileAddr);
-	noffH->uninitData.size = WordToHost (noffH->uninitData.size);
-	noffH->uninitData.virtualAddr = WordToHost (noffH->uninitData.virtualAddr);
-	noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
+SwapHeader (NoffHeader * noffH) {
+    noffH->noffMagic = WordToHost (noffH->noffMagic);
+    noffH->code.size = WordToHost (noffH->code.size);
+    noffH->code.virtualAddr = WordToHost (noffH->code.virtualAddr);
+    noffH->code.inFileAddr = WordToHost (noffH->code.inFileAddr);
+    noffH->initData.size = WordToHost (noffH->initData.size);
+    noffH->initData.virtualAddr = WordToHost (noffH->initData.virtualAddr);
+    noffH->initData.inFileAddr = WordToHost (noffH->initData.inFileAddr);
+    noffH->uninitData.size = WordToHost (noffH->uninitData.size);
+    noffH->uninitData.virtualAddr = WordToHost (noffH->uninitData.virtualAddr);
+    noffH->uninitData.inFileAddr = WordToHost (noffH->uninitData.inFileAddr);
 }
 
 #ifdef CHANGED
 
 static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
-						  int numBytes, int position,
-						  TranslationEntry *pageTable, unsigned numPages)
-{
-	TranslationEntry *saved_page_table = machine->pageTable;
-	int saved_page_table_size = machine->pageTableSize;
-	int i;
-	char *mem_buffer;
-	int written_data;
+                          int numBytes, int position,
+                          TranslationEntry *pageTable, unsigned numPages) {
+    TranslationEntry *saved_page_table = machine->pageTable;
+    int saved_page_table_size = machine->pageTableSize;
+    int i;
+    char *mem_buffer;
+    int written_data;
 
 
-	// We need to *temporarly* change the machine pageTable and pageTableSize
-	// because when we call WriteMem, this will use the current pageTable
-	// and pageTableSize
-	machine->pageTable = pageTable;
-	machine->pageTableSize = numPages;
+    // We need to *temporarly* change the machine pageTable and pageTableSize
+    // because when we call WriteMem, this will use the current pageTable
+    // and pageTableSize
+    machine->pageTable = pageTable;
+    machine->pageTableSize = numPages;
 
-	// If no memory is available, C++ will raise an exception
-	// We don't deal with this kind of issue here
-	mem_buffer = new char[numBytes];
-	executable->ReadAt(mem_buffer, numBytes, position);
+    // If no memory is available, C++ will raise an exception
+    // We don't deal with this kind of issue here
+    mem_buffer = new char[numBytes];
+    executable->ReadAt(mem_buffer, numBytes, position);
 
 
-	// For obvious efficiency reason we write the buffer
-	// word by word, if the data size is not a multiple
-	// of 4 bytes, we write the remaining data
-	for(i = 0; i < numBytes; i += 4)
-	{
-		machine->WriteMem(virtualaddr + i, 4, *((int*)&mem_buffer[i]));
-	}
+    // For obvious efficiency reason we write the buffer
+    // word by word, if the data size is not a multiple
+    // of 4 bytes, we write the remaining data
+    for (i = 0; i < numBytes; i += 4) {
+        machine->WriteMem(virtualaddr + i, 4, *((int*)&mem_buffer[i]));
+    }
 
-	written_data = (numBytes / 4)*4;
+    written_data = (numBytes / 4) * 4;
 
-	for(i = 0; i < numBytes % 4; i++)
-	{
-		machine->WriteMem(virtualaddr + written_data + i, 1,
-						  mem_buffer[written_data + i]);
-	}
+    for (i = 0; i < numBytes % 4; i++) {
+        machine->WriteMem(virtualaddr + written_data + i, 1,
+                          mem_buffer[written_data + i]);
+    }
 
-	// We recover old machine state
-	machine->pageTable = saved_page_table;
-	machine->pageTableSize = saved_page_table_size;
+    // We recover old machine state
+    machine->pageTable = saved_page_table;
+    machine->pageTableSize = saved_page_table_size;
 
-	delete [] mem_buffer;
+    delete [] mem_buffer;
 }
 
 #endif /* CHANGED */
@@ -107,78 +103,74 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
 //      "executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
 
-AddrSpace::AddrSpace (OpenFile * executable)
-{
+AddrSpace::AddrSpace (OpenFile * executable) {
     NoffHeader noffH;
     unsigned int i, size;
 
     executable->ReadAt ((char *) &noffH, sizeof (noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) &&
-	(WordToHost (noffH.noffMagic) == NOFFMAGIC))
-	SwapHeader (&noffH);
+            (WordToHost (noffH.noffMagic) == NOFFMAGIC))
+        SwapHeader (&noffH);
     ASSERT (noffH.noffMagic == NOFFMAGIC);
 
 // how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;	// we need to increase the size
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;   // we need to increase the size
     // to leave room for the stack
     numPages = divRoundUp (size, PageSize);
     size = numPages * PageSize;
 
-    ASSERT (numPages <= NumPhysPages);	// check we're not trying
+    ASSERT (numPages <= NumPhysPages);  // check we're not trying
     // to run anything too big --
     // at least until we have
     // virtual memory
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
-	   numPages, size);
+           numPages, size);
 // first, set up the translation
     pageTable = new TranslationEntry[numPages];
-    for (i = 0; i < numPages; i++)
-      {
-	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+    for (i = 0; i < numPages; i++) {
+        pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
 #ifndef CHANGED
-	  pageTable[i].physicalPage = i;
+        pageTable[i].physicalPage = i;
 #else
-	  pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
+        pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
 #endif
-	  pageTable[i].valid = TRUE;
-	  pageTable[i].use = FALSE;
-	  pageTable[i].dirty = FALSE;
-	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on
-	  // a separate page, we could set its
-	  // pages to be read-only
-      }
+        pageTable[i].valid = TRUE;
+        pageTable[i].use = FALSE;
+        pageTable[i].dirty = FALSE;
+        pageTable[i].readOnly = FALSE;    // if the code segment was entirely on
+        // a separate page, we could set its
+        // pages to be read-only
+    }
 
 // then, copy in the code and data segments into memory
-    if (noffH.code.size > 0)
-      {
-	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
-		 noffH.code.virtualAddr, noffH.code.size);
+    if (noffH.code.size > 0) {
+        DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
+               noffH.code.virtualAddr, noffH.code.size);
 #ifndef CHANGED
-	  executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
-						  noffH.code.size, noffH.code.inFileAddr);
+        executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
+                            noffH.code.size, noffH.code.inFileAddr);
 #else
-	  ReadAtVirtual(executable, noffH.code.virtualAddr,
-					noffH.code.size, noffH.code.inFileAddr,
-					pageTable, numPages);
+        ReadAtVirtual(executable, noffH.code.virtualAddr,
+                      noffH.code.size, noffH.code.inFileAddr,
+                      pageTable, numPages);
 #endif
-      }
-    if (noffH.initData.size > 0)
-      {
-	  DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
-		 noffH.initData.virtualAddr, noffH.initData.size);
+    }
+    if (noffH.initData.size > 0) {
+        DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
+               noffH.initData.virtualAddr, noffH.initData.size);
 
 #ifndef CHANGED
-	  executable->ReadAt (&
-						  (machine->mainMemory
-						   [noffH.initData.virtualAddr]),
-						  noffH.initData.size, noffH.initData.inFileAddr);
+        executable->ReadAt (&
+                            (machine->mainMemory
+                             [noffH.initData.virtualAddr]),
+                            noffH.initData.size, noffH.initData.inFileAddr);
 #else
-	  ReadAtVirtual(executable, noffH.initData.virtualAddr,
-					noffH.initData.size, noffH.initData.inFileAddr,
-					pageTable, numPages);
+        ReadAtVirtual(executable, noffH.initData.virtualAddr,
+                      noffH.initData.size, noffH.initData.inFileAddr,
+                      pageTable, numPages);
 #endif
-      }
+    }
 
 }
 
@@ -187,99 +179,84 @@ AddrSpace::AddrSpace (OpenFile * executable)
 //      Dealloate an address space.  Nothing for now!
 //----------------------------------------------------------------------
 
-AddrSpace::~AddrSpace ()
-{
+AddrSpace::~AddrSpace () {
 #ifdef CHANGED
-	unsigned int i;
-	// We don't forget to release the frames
-	for (i = 0; i < numPages; i++)
-	{
-		if(pageTable[i].valid)
-		{
-			frameprovider->ReleaseFrame(pageTable[i].physicalPage);
-		}
-	}
+    unsigned int i;
+    // We don't forget to release the frames
+    for (i = 0; i < numPages; i++) {
+        if (pageTable[i].valid) {
+            frameprovider->ReleaseFrame(pageTable[i].physicalPage);
+        }
+    }
 #endif // CHANGED
-  // LB: Missing [] for delete
-  // delete pageTable;
-  delete [] pageTable;
-  // End of modification
+    // LB: Missing [] for delete
+    // delete pageTable;
+    delete [] pageTable;
+    // End of modification
 }
 
 
 #ifdef CHANGED
 
-AddrSpace::AddrSpace (AddrSpace *space, bool copy_on_write)
-{
-	unsigned int i;
+AddrSpace::AddrSpace (AddrSpace *space, bool copy_on_write) {
+    unsigned int i;
 
-	numPages = space->numPages;
-	pageTable = new TranslationEntry[numPages];
+    numPages = space->numPages;
+    pageTable = new TranslationEntry[numPages];
 
-	for (i = 0; i < numPages; i++)
-	{
-		pageTable[i].virtualPage = i;
+    for (i = 0; i < numPages; i++) {
+        pageTable[i].virtualPage = i;
 
-		pageTable[i].valid = space->pageTable[i].valid;
-		pageTable[i].use = space->pageTable[i].use;
-		pageTable[i].dirty = space->pageTable[i].dirty;
+        pageTable[i].valid = space->pageTable[i].valid;
+        pageTable[i].use = space->pageTable[i].use;
+        pageTable[i].dirty = space->pageTable[i].dirty;
 
-		if(pageTable[i].valid)
-		{
-			if (copy_on_write)
-			{
-				pageTable[i].physicalPage = space->pageTable[i].physicalPage;
-				frameprovider->UseFrame(pageTable[i].physicalPage);
-			}
-			else
-			{
-				pageTable[i].physicalPage =
-					frameprovider->GetCopiedFrame(
-						space->pageTable[i].physicalPage);
-			}
-		}
+        if (pageTable[i].valid) {
+            if (copy_on_write) {
+                pageTable[i].physicalPage = space->pageTable[i].physicalPage;
+                frameprovider->UseFrame(pageTable[i].physicalPage);
+            } else {
+                pageTable[i].physicalPage =
+                    frameprovider->GetCopiedFrame(
+                        space->pageTable[i].physicalPage);
+            }
+        }
 
-		if(copy_on_write)
-		{
-			pageTable[i].readOnly = true;
-			space->pageTable[i].readOnly = true;
-		}
-		else
-		{
-			pageTable[i].readOnly = space->pageTable[i].readOnly;
-		}
-	}
+        if (copy_on_write) {
+            pageTable[i].readOnly = true;
+            space->pageTable[i].readOnly = true;
+        } else {
+            pageTable[i].readOnly = space->pageTable[i].readOnly;
+        }
+    }
 }
 
-bool AddrSpace::HandleReadOnly(int vaddr)
-{
-	unsigned vp = vaddr / PageSize;
+bool AddrSpace::HandleReadOnly(int vaddr) {
+    unsigned vp = vaddr / PageSize;
 
-	if(pageTable[vp].valid && vp >= 0 && vp < numPages)
-	{
-		int new_frame = frameprovider->GetCopiedFrame(
-			pageTable[vp].physicalPage);
+    if (pageTable[vp].valid && vp >= 0 && vp < numPages) {
+        int new_frame = frameprovider->GetCopiedFrame(
+                            pageTable[vp].physicalPage);
 
-		// JD: Maybe we should handle a special case when we don't have memory
-		// anymore? maybe use swap but this should IMHO be integrated in the frameprovider
-		//
-		// For now we just return false but this kind of error should not be ignored
-		//
-		// Since we don't have an heap yet, and code is not read only
-		// We assume that we are in a CopyOnWrite case
+        // JD: Maybe we should handle a special case when we don't have memory
+        // anymore? maybe use swap but this should IMHO be integrated in the frameprovider
+        //
+        // For now we just return false but this kind of error should not be ignored
+        //
+        // Since we don't have an heap yet, and code is not read only
+        // We assume that we are in a CopyOnWrite case
 
-		if (new_frame >= 0)
-		{
-			// We tell the frame provider that we no longer use this frame
-			// and we set the freshly copied frame
-			// We do not forget to permit write
-			frameprovider->ReleaseFrame(pageTable[vp].physicalPage);
-			pageTable[vp].physicalPage = new_frame;
-			pageTable[vp].readOnly = false;
-			return true;
-		}
-	}
-	return false;
+        if (new_frame >= 0) {
+            // We tell the frame provider that we no longer use this frame
+            // and we set the freshly copied frame
+            // We do not forget to permit write
+            frameprovider->ReleaseFrame(pageTable[vp].physicalPage);
+            pageTable[vp].physicalPage = new_frame;
+            pageTable[vp].readOnly = false;
+            return true;
+        }
+    }
+    return false;
 }
 
 #endif
@@ -295,15 +272,14 @@ bool AddrSpace::HandleReadOnly(int vaddr)
 //----------------------------------------------------------------------
 
 void
-AddrSpace::InitRegisters ()
-{
+AddrSpace::InitRegisters () {
     int i;
 
     for (i = 0; i < NumTotalRegs; i++)
-		machine->WriteRegister (i, 0);
+        machine->WriteRegister (i, 0);
 
     // Initial program counter -- must be location of "Start"
-	// TO BE SURE
+    // TO BE SURE
     machine->WriteRegister (PCReg, 0);
 
     // Need to also tell MIPS where next instruction is, because
@@ -315,7 +291,7 @@ AddrSpace::InitRegisters ()
     // accidentally reference off the end!
     machine->WriteRegister (StackReg, numPages * PageSize - 16);
     DEBUG ('a', "Initializing stack register to %d\n",
-	   numPages * PageSize - 16);
+           numPages * PageSize - 16);
 }
 
 //----------------------------------------------------------------------
@@ -327,8 +303,7 @@ AddrSpace::InitRegisters ()
 //----------------------------------------------------------------------
 
 void
-AddrSpace::SaveState ()
-{
+AddrSpace::SaveState () {
 }
 
 //----------------------------------------------------------------------
@@ -340,8 +315,7 @@ AddrSpace::SaveState ()
 //----------------------------------------------------------------------
 
 void
-AddrSpace::RestoreState ()
-{
+AddrSpace::RestoreState () {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }

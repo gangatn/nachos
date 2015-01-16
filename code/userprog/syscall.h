@@ -1,9 +1,9 @@
 /* syscalls.h
- * 	Nachos system call interface.  These are Nachos kernel operations
- * 	that can be invoked from user programs, by trapping to the kernel
- *	via the "syscall" instruction.
+ *  Nachos system call interface.  These are Nachos kernel operations
+ *  that can be invoked from user programs, by trapping to the kernel
+ *  via the "syscall" instruction.
  *
- *	This file is included by user programs and by the Nachos kernel.
+ *  This file is included by user programs and by the Nachos kernel.
  *
  * Copyright (c) 1992-1993 The Regents of the University of California.
  * All rights reserved.  See copyright.h for copyright notice and limitation
@@ -30,7 +30,7 @@
 
 enum {
 #include "syscall.def.h"
-	SYSCALL_COUNT
+    SYSCALL_COUNT
 };
 
 
@@ -72,24 +72,24 @@ typedef int OpenFileId;
  * the console device.
  */
 
-#define ConsoleInput	0
-#define ConsoleOutput	1
+#define ConsoleInput    0
+#define ConsoleOutput   1
 
 #else
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
-#define SC_Halt		0
-#define SC_Exit		1
-#define SC_Exec		2
-#define SC_Join		3
-#define SC_Create	4
-#define SC_Open		5
-#define SC_Read		6
-#define SC_Write	7
-#define SC_Close	8
-#define SC_Fork		9
-#define SC_Yield	10
+#define SC_Halt     0
+#define SC_Exit     1
+#define SC_Exec     2
+#define SC_Join     3
+#define SC_Create   4
+#define SC_Open     5
+#define SC_Read     6
+#define SC_Write    7
+#define SC_Close    8
+#define SC_Fork     9
+#define SC_Yield    10
 
 #ifdef IN_USER_MODE
 
@@ -148,8 +148,8 @@ typedef int OpenFileId;
  * the console device.
  */
 
-#define ConsoleInput	0
-#define ConsoleOutput	1
+#define ConsoleInput    0
+#define ConsoleOutput   1
 
 /* Create a Nachos file, with "name" */
 void Create (char *name);

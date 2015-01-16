@@ -17,13 +17,13 @@
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
-Thread *currentThread;		// the thread we are running now
-Thread *threadToBeDestroyed;	// the thread that just finished
-Scheduler *scheduler;		// the ready list
-Interrupt *interrupt;		// interrupt status
-Statistics *stats;		// performance metrics
-Timer *timer;			// the hardware timer device,
-					// for invoking context switches
+Thread *currentThread;      // the thread we are running now
+Thread *threadToBeDestroyed;    // the thread that just finished
+Scheduler *scheduler;       // the ready list
+Interrupt *interrupt;       // interrupt status
+Statistics *stats;      // performance metrics
+Timer *timer;           // the hardware timer device,
+// for invoking context switches
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -33,8 +33,8 @@ FileSystem *fileSystem;
 SynchDisk *synchDisk;
 #endif
 
-#ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
-Machine *machine;		// user program memory and registers
+#ifdef USER_PROGRAM     // requires either FILESYS or FILESYS_STUB
+Machine *machine;       // user program memory and registers
 #endif
 
 #ifdef NETWORK
@@ -71,10 +71,9 @@ extern void Cleanup ();
 //              whether it needs it or not.
 //----------------------------------------------------------------------
 static void
-TimerInterruptHandler (int dummy)
-{
+TimerInterruptHandler (int dummy) {
     if (interrupt->getStatus () != IdleMode)
-	interrupt->YieldOnReturn ();
+        interrupt->YieldOnReturn ();
 }
 
 //----------------------------------------------------------------------
@@ -88,74 +87,65 @@ TimerInterruptHandler (int dummy)
 //              ex: "nachos -d +" -> argv = {"nachos", "-d", "+"}
 //----------------------------------------------------------------------
 void
-Initialize (int argc, char **argv)
-{
+Initialize (int argc, char **argv) {
     int argCount;
     const char *debugArgs = "";
     bool randomYield = FALSE;
 
 #ifdef USER_PROGRAM
-    bool debugUserProg = FALSE;	// single step user program
+    bool debugUserProg = FALSE; // single step user program
 #endif
 #ifdef FILESYS_NEEDED
-    bool format = FALSE;	// format disk
+    bool format = FALSE;    // format disk
 #endif
 #ifdef NETWORK
-    double rely = 1;		// network reliability
-    int netname = 0;		// UNIX socket name
+    double rely = 1;        // network reliability
+    int netname = 0;        // UNIX socket name
 #endif
 
-    for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount)
-      {
-	  argCount = 1;
-	  if (!strcmp (*argv, "-d"))
-	    {
-		if (argc == 1)
-		    debugArgs = "+";	// turn on all debug flags
-		else
-		  {
-		      debugArgs = *(argv + 1);
-		      argCount = 2;
-		  }
-	    }
-	  else if (!strcmp (*argv, "-rs"))
-	    {
-		ASSERT (argc > 1);
-		RandomInit (atoi (*(argv + 1)));	// initialize pseudo-random
-		// number generator
-		randomYield = TRUE;
-		argCount = 2;
-	    }
+    for (argc--, argv++; argc > 0; argc -= argCount, argv += argCount) {
+        argCount = 1;
+        if (!strcmp (*argv, "-d")) {
+            if (argc == 1)
+                debugArgs = "+";    // turn on all debug flags
+            else {
+                debugArgs = *(argv + 1);
+                argCount = 2;
+            }
+        } else if (!strcmp (*argv, "-rs")) {
+            ASSERT (argc > 1);
+            RandomInit (atoi (*(argv + 1)));    // initialize pseudo-random
+            // number generator
+            randomYield = TRUE;
+            argCount = 2;
+        }
 #ifdef USER_PROGRAM
-	  if (!strcmp (*argv, "-s"))
-	      debugUserProg = TRUE;
+        if (!strcmp (*argv, "-s"))
+            debugUserProg = TRUE;
 #endif
 #ifdef FILESYS_NEEDED
-	  if (!strcmp (*argv, "-f"))
-	      format = TRUE;
+        if (!strcmp (*argv, "-f"))
+            format = TRUE;
 #endif
 #ifdef NETWORK
-	  if (!strcmp (*argv, "-l"))
-	    {
-		ASSERT (argc > 1);
-		rely = atof (*(argv + 1));
-		argCount = 2;
-	    }
-	  else if (!strcmp (*argv, "-m"))
-	    {
-		ASSERT (argc > 1);
-		netname = atoi (*(argv + 1));
-		argCount = 2;
-	    }
+        if (!strcmp (*argv, "-l")) {
+            ASSERT (argc > 1);
+            rely = atof (*(argv + 1));
+            argCount = 2;
+        } else if (!strcmp (*argv, "-m")) {
+            ASSERT (argc > 1);
+            netname = atoi (*(argv + 1));
+            argCount = 2;
+        }
 #endif
-      }
+    }
 
-    DebugInit (debugArgs);	// initialize DEBUG messages
-    stats = new Statistics ();	// collect statistics
-    interrupt = new Interrupt;	// start up interrupt handling
-    scheduler = new Scheduler ();	// initialize the ready queue
-    if (randomYield)		// start the timer (if needed)
-	timer = new Timer (TimerInterruptHandler, 0, randomYield);
+    DebugInit (debugArgs);  // initialize DEBUG messages
+    stats = new Statistics ();  // collect statistics
+    interrupt = new Interrupt;  // start up interrupt handling
+    scheduler = new Scheduler ();   // initialize the ready queue
+    if (randomYield)        // start the timer (if needed)
+        timer = new Timer (TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
 
@@ -166,13 +156,13 @@ Initialize (int argc, char **argv)
     currentThread->setStatus (RUNNING);
 
     interrupt->Enable ();
-    CallOnUserAbort (Cleanup);	// if user hits ctl-C
+    CallOnUserAbort (Cleanup);  // if user hits ctl-C
 
 #ifdef USER_PROGRAM
-    machine = new Machine (debugUserProg);	// this must come first
+    machine = new Machine (debugUserProg);  // this must come first
 #ifdef CHANGED
-	frameprovider = new FrameProvider();
-	processmanager = new ProcessManager();
+    frameprovider = new FrameProvider();
+    processmanager = new ProcessManager();
 #endif
 #endif
 
@@ -194,8 +184,7 @@ Initialize (int argc, char **argv)
 //      Nachos is halting.  De-allocate global data structures.
 //----------------------------------------------------------------------
 void
-Cleanup ()
-{
+Cleanup () {
     printf ("\nCleaning up...\n");
 #ifdef NETWORK
     delete postOffice;
@@ -220,7 +209,7 @@ Cleanup ()
 #ifdef CHANGED
 #ifdef USER_PROGRAM
     delete synchconsole;
-	delete frameprovider;
+    delete frameprovider;
 #endif // USER_PROGRAM
 #endif // CHANGED
 

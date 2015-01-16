@@ -1,4 +1,4 @@
-// scheduler.cc 
+// scheduler.cc
 //      Routines to choose the next thread to run, and to dispatch to
 //      that thread.
 //
@@ -7,15 +7,15 @@
 //      (since we are on a uniprocessor).
 //
 //      NOTE: We can't use Locks to provide mutual exclusion here, since
-//      if we needed to wait for a lock, and the lock was busy, we would 
-//      end up calling FindNextToRun(), and that would put us in an 
+//      if we needed to wait for a lock, and the lock was busy, we would
+//      end up calling FindNextToRun(), and that would put us in an
 //      infinite loop.
 //
 //      Very simple implementation -- no priorities, straight FIFO.
 //      Might need to be improved in later assignments.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -27,8 +27,7 @@
 //      Initialize the list of ready but not running threads to empty.
 //----------------------------------------------------------------------
 
-Scheduler::Scheduler ()
-{
+Scheduler::Scheduler () {
     readyList = new List;
 }
 
@@ -37,8 +36,7 @@ Scheduler::Scheduler ()
 //      De-allocate the list of ready threads.
 //----------------------------------------------------------------------
 
-Scheduler::~Scheduler ()
-{
+Scheduler::~Scheduler () {
     delete readyList;
 }
 
@@ -51,8 +49,7 @@ Scheduler::~Scheduler ()
 //----------------------------------------------------------------------
 
 void
-Scheduler::ReadyToRun (Thread * thread)
-{
+Scheduler::ReadyToRun (Thread * thread) {
     DEBUG ('t', "Putting thread %s on ready list.\n", thread->getName ());
 
     thread->setStatus (READY);
@@ -68,8 +65,7 @@ Scheduler::ReadyToRun (Thread * thread)
 //----------------------------------------------------------------------
 
 Thread *
-Scheduler::FindNextToRun ()
-{
+Scheduler::FindNextToRun () {
     return (Thread *) readyList->Remove ();
 }
 
@@ -88,32 +84,31 @@ Scheduler::FindNextToRun ()
 //----------------------------------------------------------------------
 
 void
-Scheduler::Run (Thread * nextThread)
-{
+Scheduler::Run (Thread * nextThread) {
     Thread *oldThread = currentThread;
 
     // LB: For safety...
     ASSERT (interrupt->getLevel () == IntOff);
     // End of addition
 
-#ifdef USER_PROGRAM		// ignore until running user programs
-    if (currentThread->space != NULL)
-      {				// if this thread is a user program,
-	  currentThread->SaveUserState ();	// save the user's CPU registers
-	  currentThread->space->SaveState ();
-      }
+#ifdef USER_PROGRAM     // ignore until running user programs
+    if (currentThread->space != NULL) {
+        // if this thread is a user program,
+        currentThread->SaveUserState ();  // save the user's CPU registers
+        currentThread->space->SaveState ();
+    }
 #endif
 
-    oldThread->CheckOverflow ();	// check if the old thread
+    oldThread->CheckOverflow ();    // check if the old thread
     // had an undetected stack overflow
 
-    currentThread = nextThread;	// switch to the next thread
-    currentThread->setStatus (RUNNING);	// nextThread is now running
+    currentThread = nextThread; // switch to the next thread
+    currentThread->setStatus (RUNNING); // nextThread is now running
 
     DEBUG ('t', "Switching from thread \"%s\" to thread \"%s\"\n",
-	   oldThread->getName (), nextThread->getName ());
+           oldThread->getName (), nextThread->getName ());
 
-    // This is a machine-dependent assembly language routine defined 
+    // This is a machine-dependent assembly language routine defined
     // in switch.s.  You may have to think
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".
@@ -126,18 +121,17 @@ Scheduler::Run (Thread * nextThread)
     // we need to delete its carcass.  Note we cannot delete the thread
     // before now (for example, in Thread::Finish()), because up to this
     // point, we were still running on the old thread's stack!
-    if (threadToBeDestroyed != NULL)
-      {
-	  delete threadToBeDestroyed;
-	  threadToBeDestroyed = NULL;
-      }
+    if (threadToBeDestroyed != NULL) {
+        delete threadToBeDestroyed;
+        threadToBeDestroyed = NULL;
+    }
 
 #ifdef USER_PROGRAM
-    if (currentThread->space != NULL)
-      {				// if there is an address space
-	  currentThread->RestoreUserState ();	// to restore, do it.
-	  currentThread->space->RestoreState ();
-      }
+    if (currentThread->space != NULL) {
+        // if there is an address space
+        currentThread->RestoreUserState ();   // to restore, do it.
+        currentThread->space->RestoreState ();
+    }
 #endif
 }
 
@@ -147,8 +141,7 @@ Scheduler::Run (Thread * nextThread)
 //      the ready list.  For debugging.
 //----------------------------------------------------------------------
 void
-Scheduler::Print ()
-{
+Scheduler::Print () {
     printf ("Ready list contents:\n");
     readyList->Mapcar ((VoidFunctionPtr) ThreadPrint);
 }

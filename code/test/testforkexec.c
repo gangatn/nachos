@@ -1,13 +1,12 @@
 #include "syscall.h"
 
-int main(void)
-{
-  int pid;
+int main(void) {
+    int pid;
 
-  pid = ForkExec("putstring");
-  
-  if (pid != 0)
-    PutString("I am the father\n");
+    pid = ForkExec("putstring");
 
-  return 0;
+    if (pid != 0)
+        PutString("I am the father\n");
+
+    return 0;
 }

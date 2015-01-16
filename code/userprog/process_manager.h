@@ -14,31 +14,30 @@
 
 struct process_entry;
 
-class ProcessManager
-{
+class ProcessManager {
 public:
-	ProcessManager();
+    ProcessManager();
 
-	~ProcessManager();
+    ~ProcessManager();
 
-	void Init(char *filename);
+    void Init(char *filename);
 
-	int Fork();
+    int Fork();
 
-	void Exit(int exit_code);
+    void Exit(int exit_code);
 
-	int WaitPid(int pid);
+    int WaitPid(int pid);
 
-	int Exec(char *filename);
+    int Exec(char *filename);
 
-	int ForkExec(char *filename);
+    int ForkExec(char *filename);
 
-	int getppid(int pid);
+    int getppid(int pid);
 private:
-	BitMap pids;
-	void initProcess(Thread *thread, int pid, int ppid);
+    BitMap pids;
+    void initProcess(Thread *thread, int pid, int ppid);
 
-	std::list<struct process_entry*> processlist;
+    std::list<struct process_entry*> processlist;
 };
 
 #endif /* PROCESS_MANAGER_H */

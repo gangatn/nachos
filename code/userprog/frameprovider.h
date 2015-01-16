@@ -12,56 +12,55 @@
 
 
 
-class FrameProvider
-{
+class FrameProvider {
 public:
-	FrameProvider();
-	~FrameProvider();
+    FrameProvider();
+    ~FrameProvider();
 
-	// GetEmptyFrame:
-	//
-	// Return a valid physical empty frame
-	// this frame shall not be returned
-	// again by multiple calls until released
-	//
-	// All bytes of the frame equals 0
-	//
-	// This also mark the returned frame as used
-	//
-	// Return -1 if no frame is available
-	int GetEmptyFrame();
+    // GetEmptyFrame:
+    //
+    // Return a valid physical empty frame
+    // this frame shall not be returned
+    // again by multiple calls until released
+    //
+    // All bytes of the frame equals 0
+    //
+    // This also mark the returned frame as used
+    //
+    // Return -1 if no frame is available
+    int GetEmptyFrame();
 
-	// GetCopiedFrame:
-	//
-	// Return a valid physical frame that is
-	// a copy of the given frame
-	//
-	// This also mark the returned frame as used
-	//
-	// Return -1 if no frame is available
-	int GetCopiedFrame(int frame);
+    // GetCopiedFrame:
+    //
+    // Return a valid physical frame that is
+    // a copy of the given frame
+    //
+    // This also mark the returned frame as used
+    //
+    // Return -1 if no frame is available
+    int GetCopiedFrame(int frame);
 
-	// UseFrame:
-	//
-	// Indicated the frame provider that there
-	// is a new user to the given thread
-	// This is *OBLIGATORY* to call this function
-	// if you use a frame that you did not get using
-	// the GetEmptyFrame or the GetCopiedFrame functions
-	void UseFrame(int frame);
+    // UseFrame:
+    //
+    // Indicated the frame provider that there
+    // is a new user to the given thread
+    // This is *OBLIGATORY* to call this function
+    // if you use a frame that you did not get using
+    // the GetEmptyFrame or the GetCopiedFrame functions
+    void UseFrame(int frame);
 
-	// Release the given frame
-	// This frame shall not be used again
-	// by the called
-	void ReleaseFrame(int frame);
+    // Release the given frame
+    // This frame shall not be used again
+    // by the called
+    void ReleaseFrame(int frame);
 
-	// Returns the number of available frames
-	int NumAvailFrame();
+    // Returns the number of available frames
+    int NumAvailFrame();
 private:
-	short *frame_ref;
-	int frame_count;
+    short *frame_ref;
+    int frame_count;
 
-	int findFreeFrame();
+    int findFreeFrame();
 };
 
 

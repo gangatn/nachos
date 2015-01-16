@@ -1,16 +1,16 @@
 /* switch.h
- *	Definitions needed for implementing context switching.
+ *  Definitions needed for implementing context switching.
  *
- *	Context switching is inherently machine dependent, since
- *	the registers to be saved, how to set up an initial
- *	call frame, etc, are all specific to a processor architecture.
+ *  Context switching is inherently machine dependent, since
+ *  the registers to be saved, how to set up an initial
+ *  call frame, etc, are all specific to a processor architecture.
  *
- * 	This file currently supports the DEC MIPS and SUN SPARC architectures.
+ *  This file currently supports the DEC MIPS and SUN SPARC architectures.
  */
 
 /*
  Copyright (c) 1992-1993 The Regents of the University of California.
- All rights reserved.  See copyright.h for copyright notice and limitation 
+ All rights reserved.  See copyright.h for copyright notice and limitation
  of liability and disclaimer of warranty provisions.
  */
 
@@ -21,8 +21,8 @@
 
 #ifdef HOST_MIPS
 
-/* Registers that must be saved during a context switch. 
- * These are the offsets from the beginning of the Thread object, 
+/* Registers that must be saved during a context switch.
+ * These are the offsets from the beginning of the Thread object,
  * in bytes, used in switch.s
  */
 #define SP 0
@@ -47,17 +47,17 @@
  * values in the Thread object -- used in Thread::AllocateStack().
  */
 
-#define InitialPC	s0
-#define InitialArg	s1
-#define WhenDonePC	s2
-#define StartupPC	s3
+#define InitialPC   s0
+#define InitialArg  s1
+#define WhenDonePC  s2
+#define StartupPC   s3
 
-#define PCState		(PC/4-1)
-#define FPState		(FP/4-1)
-#define InitialPCState	(S0/4-1)
-#define InitialArgState	(S1/4-1)
-#define WhenDonePCState	(S2/4-1)
-#define StartupPCState	(S3/4-1)
+#define PCState     (PC/4-1)
+#define FPState     (FP/4-1)
+#define InitialPCState  (S0/4-1)
+#define InitialArgState (S1/4-1)
+#define WhenDonePCState (S2/4-1)
+#define StartupPCState  (S3/4-1)
 
 #endif // HOST_MIPS
 
@@ -113,7 +113,7 @@
 #define   PC   68
 
 /* Registers for ThreadRoot.  See comment above. */
-#define InitialPC       %r3	/* S0 */
+#define InitialPC       %r3 /* S0 */
 #define InitialArg      %r4
 #define WhenDonePC      %r5
 #define StartupPC       %r6

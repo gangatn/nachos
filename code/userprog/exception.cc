@@ -30,8 +30,7 @@
 // the user program immediately after the "syscall" instruction.
 //----------------------------------------------------------------------
 static void
-UpdatePC ()
-{
+UpdatePC () {
     int pc = machine->ReadRegister (PCReg);
     machine->WriteRegister (PrevPCReg, pc);
     pc = machine->ReadRegister (NextPCReg);
@@ -79,8 +78,7 @@ typedef bool (*handler_ptr)(void);
  * the only issue of this implementation is the branch prediction miss
  * but this is negligible in our case.
  */
-handler_ptr syscall_handlers[SYSCALL_COUNT] =
-{
+handler_ptr syscall_handlers[SYSCALL_COUNT] = {
 #include "syscall.def.h"
 };
 
@@ -90,82 +88,65 @@ handler_ptr syscall_handlers[SYSCALL_COUNT] =
 #endif
 
 void
-ExceptionHandler (ExceptionType which)
-{
+ExceptionHandler (ExceptionType which) {
     int type = machine->ReadRegister (2);
 #ifdef CHANGED
     bool shall_update_pc;
 #endif
 
 #ifndef CHANGED
-    if ((which == SyscallException) && (type == SC_Halt))
-	{
-		DEBUG ('a', "Shutdown, initiated by user program.\n");
-		interrupt->Halt ();
-	}
-    else
-	{
-		printf ("Unexpected user mode exception %d %d\n", which, type);
-		ASSERT (FALSE);
-	}
+    if ((which == SyscallException) && (type == SC_Halt)) {
+        DEBUG ('a', "Shutdown, initiated by user program.\n");
+        interrupt->Halt ();
+    } else {
+        printf ("Unexpected user mode exception %d %d\n", which, type);
+        ASSERT (FALSE);
+    }
 #else // CHANGED
-	if (which == SyscallException) {
+    if (which == SyscallException) {
 
-		if(type < 0 || type >= SYSCALL_COUNT)
-		{
-			printf("Invalid system call #%i\n", type);
-			ASSERT(FALSE);
-		}
-		else
-		{
-			handler_ptr handler = syscall_handlers[type];
-			if (handler != NULL)
-			{
-				IntStatus oldlevel = interrupt->SetLevel(IntOff);
-				shall_update_pc = handler();
-				interrupt->SetLevel(oldlevel);
-			}
-			else
-			{
-				printf("No handler for syscall %i\n", type);
-				ASSERT(FALSE);
-			}
-		}
+        if (type < 0 || type >= SYSCALL_COUNT) {
+            printf("Invalid system call #%i\n", type);
+            ASSERT(FALSE);
+        } else {
+            handler_ptr handler = syscall_handlers[type];
+            if (handler != NULL) {
+                IntStatus oldlevel = interrupt->SetLevel(IntOff);
+                shall_update_pc = handler();
+                interrupt->SetLevel(oldlevel);
+            } else {
+                printf("No handler for syscall %i\n", type);
+                ASSERT(FALSE);
+            }
+        }
 
-	}
-	else if (which == ReadOnlyException)
-	{
-		unsigned guilty_vaddr = machine->ReadRegister(BadVAddrReg);
+    } else if (which == ReadOnlyException) {
+        unsigned guilty_vaddr = machine->ReadRegister(BadVAddrReg);
 
-		if (currentThread->space->HandleReadOnly(guilty_vaddr))
-		{
-			DEBUG('a', "Read only exception at a CopyOnWrite location");
-		}
-		else
-		{
-			// JD: For now we do not handle this case, we simply
-			// crash the system, a better solution would be:
-			// If we have a signal system, send a SIGSEGV
-			// If we don't, kill the process and don't stop the system
-			printf("Write not allowed at virtual adress %i\n", guilty_vaddr);
-			ASSERT(false);
-		}
+        if (currentThread->space->HandleReadOnly(guilty_vaddr)) {
+            DEBUG('a', "Read only exception at a CopyOnWrite location");
+        } else {
+            // JD: For now we do not handle this case, we simply
+            // crash the system, a better solution would be:
+            // If we have a signal system, send a SIGSEGV
+            // If we don't, kill the process and don't stop the system
+            printf("Write not allowed at virtual adress %i\n", guilty_vaddr);
+            ASSERT(false);
+        }
 
-		// Now we will retry to execute the instruction
-		shall_update_pc = false;
-	}
-	else
-	{
-		printf ("Unexpected user mode exception %d %d\n", which, type);
-		ASSERT (FALSE);
-	}
+        // Now we will retry to execute the instruction
+        shall_update_pc = false;
+    } else {
+        printf ("Unexpected user mode exception %d %d\n", which, type);
+        ASSERT (FALSE);
+    }
 
 
 #endif // CHANGED
 
 #ifdef CHANGED
-    if(shall_update_pc)
-      UpdatePC ();
+    if (shall_update_pc)
+        UpdatePC ();
 #else
     // LB: Do not forget to increment the pc before returning!
     UpdatePC();
