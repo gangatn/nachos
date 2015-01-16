@@ -151,7 +151,6 @@ public:
 
 	// Process
 	int pid;
-	int ppid;
 	//
 
 	// User threads

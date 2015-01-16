@@ -49,7 +49,6 @@ void ProcessManager::initProcess(Thread *th, int pid, int ppid)
 	*(th->threadcount) = 1;
 
 	th->pid = pid;
-	th->ppid = ppid;
 
 	entry->ppid = ppid;
 	entry->pid = pid;
@@ -195,10 +194,10 @@ void ProcessManager::Exit(int exit_code)
 	    }
 	  }
 
-	  // Attach all processes with the ppid of the currentThread to Init
+	  // Attach all processes which the ppid matches the pid of the currentThread to Init
 	  for (it = processlist.begin() ; it != processlist.end() ; ++it) {
 	    entry = *it;
-	    if (entry->ppid == currentThread->ppid) {
+	    if (entry->ppid == currentThread->pid) {
 	      entry->ppid = 1;
 	    }
 	  }

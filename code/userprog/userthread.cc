@@ -40,7 +40,6 @@ int do_UserThreadCreate(int f, int arg)
   newThread->maxtid = currentThread->maxtid;
 
   newThread->pid = currentThread->pid;
-  newThread->ppid = currentThread->ppid;
 
   /* set the tid of the new thread */
   if (newThread->availabletids->empty()) {
