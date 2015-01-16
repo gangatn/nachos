@@ -7,6 +7,13 @@
 
 using namespace std;
 
+struct process_entry
+{
+  int ppid;
+  int pid;
+  Semaphore *semproc;
+};
+
 ProcessManager::ProcessManager()
 	: pids(MAX_PROCESS)
 	, processlist()

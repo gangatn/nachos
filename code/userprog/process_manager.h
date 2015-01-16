@@ -12,12 +12,7 @@
 
 #define MAX_PROCESS 65536
 
-struct process_entry
-{
-  int ppid;
-  int pid;
-  Semaphore *semproc;
-};
+struct process_entry;
 
 class ProcessManager
 {
