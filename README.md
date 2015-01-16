@@ -11,6 +11,7 @@ Progression
   - [ ] Network
 - extras
   - Fork, Exec, and ForkExec syscalls
+  - getpid, getppid syscalls
   - ...
 
 Building the project
