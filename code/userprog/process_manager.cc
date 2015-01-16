@@ -198,8 +198,9 @@ void ProcessManager::Exit(int exit_code)
 	  // Attach all processes with the ppid of the currentThread to Init
 	  for (it = processlist.begin() ; it != processlist.end() ; ++it) {
 	    entry = *it;
-	    if (entry->ppid == currentThread->ppid)
+	    if (entry->ppid == currentThread->ppid) {
 	      entry->ppid = 1;
+	    }
 	  }
 	  
 	  currentThread->Finish();
@@ -227,5 +228,16 @@ int ProcessManager::WaitPid(int pid)
   }
   
   // PID not found
+  return -1;
+}
+
+int ProcessManager::getppid(int pid)
+{
+  list<struct process_entry*>::iterator it;
+
+  for (it = processlist.begin() ; it != processlist.end() ; ++it)
+    if ((*it)->pid == pid)
+      return (*it)->ppid;
+
   return -1;
 }

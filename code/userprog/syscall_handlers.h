@@ -18,5 +18,7 @@ bool syscall_fork(void);
 bool syscall_exec(void);
 bool syscall_forkexec(void);
 bool syscall_waitpid(void);
+bool syscall_getpid(void);
+bool syscall_getppid(void);
 
 #endif /* SYSCALL_HANDLERS_H_ */

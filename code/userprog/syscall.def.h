@@ -79,3 +79,6 @@ SYSCALL_FUNC(Fork, syscall_fork, int)
 SYSCALL_FUNC(Exec, syscall_exec, int, char *s)
 SYSCALL_FUNC(ForkExec, syscall_forkexec, int, char *filename)
 SYSCALL_FUNC(WaitPid, syscall_waitpid, int, int pid)
+SYSCALL_FUNC(getpid, syscall_getpid, int)
+SYSCALL_FUNC(getppid, syscall_getppid, int)
+

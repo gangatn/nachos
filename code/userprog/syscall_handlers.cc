@@ -194,4 +194,23 @@ bool syscall_waitpid(void)
   RETURN(ret);
   return true;
 }
+
+bool syscall_getpid(void)
+{
+  RETURN(currentThread->pid);
+  return true;
+}
+
+bool syscall_getppid(void)
+{
+  int ppid = processmanager->getppid(currentThread->pid);
+
+  /* The current thread is currently running
+   * it MUST be in the process list of the process manager
+   */
+  ASSERT(ppid != -1);
+
+  RETURN(ppid);
+  return true;
+}
 #endif /* SYSCALL_HANDLERS_H_ */

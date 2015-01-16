@@ -37,6 +37,8 @@ public:
 	int Exec(char *filename);
 
 	int ForkExec(char *filename);
+
+	int getppid(int pid);
 private:
 	BitMap pids;
 	void initProcess(Thread *thread, int pid, int ppid);
