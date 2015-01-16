@@ -194,4 +194,11 @@ bool syscall_getppid(void) {
     RETURN(ppid);
     return true;
 }
+
+bool syscall_sbrk() {
+    int n = PARAM(1);
+    int ret = currentThread->space->Sbrk(n);
+    RETURN(ret);
+    return true;
+}
 #endif /* SYSCALL_HANDLERS_H_ */

@@ -82,3 +82,4 @@ SYSCALL_FUNC(WaitPid, syscall_waitpid, int, int pid)
 SYSCALL_FUNC(getpid, syscall_getpid, int)
 SYSCALL_FUNC(getppid, syscall_getppid, int)
 
+SYSCALL_FUNC(Sbrk, syscall_sbrk, void *, int n)

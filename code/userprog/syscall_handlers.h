@@ -21,4 +21,5 @@ bool syscall_waitpid(void);
 bool syscall_getpid(void);
 bool syscall_getppid(void);
 
+bool syscall_sbrk(void);
 #endif /* SYSCALL_HANDLERS_H_ */

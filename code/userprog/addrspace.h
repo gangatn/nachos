@@ -17,6 +17,7 @@
 #include "filesys.h"
 
 #define UserStackSize       262144  // increase this as necessary!
+#define UserHeapSize        262144
 
 class AddrSpace {
 public:
@@ -32,7 +33,7 @@ public:
     AddrSpace (AddrSpace *space, bool copy_on_write);
 #endif
 
-    ~AddrSpace ();      // De-allocate an address space
+    ~AddrSpace ();          // De-allocate an address space
 
     void InitRegisters ();  // Initialize user-level CPU registers,
     // before jumping to user code
@@ -49,16 +50,18 @@ public:
     // isn't supposed to write, nothing is done and the function return
     // false
     bool HandleReadOnly(int virt_addr);
+
+    int Sbrk(unsigned int n);
 #endif // CHANGED
 
-    void SaveState ();      // Save/restore address space-specific
-    void RestoreState ();   // info on a context switch
-
+    void SaveState ();              // Save/restore address space-specific
+    void RestoreState ();           // info on a context switch
 private:
     TranslationEntry * pageTable;   // Assume linear page table translation
     // for now!
-    unsigned int numPages;  // Number of pages in the virtual
+    unsigned int numPages;          // Number of pages in the virtual
     // address space
+    unsigned int brk;               // limit between valid page and invalid page
 };
 
 #endif // ADDRSPACE_H

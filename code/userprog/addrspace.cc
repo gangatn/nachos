@@ -106,15 +106,30 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr,
 AddrSpace::AddrSpace (OpenFile * executable) {
     NoffHeader noffH;
     unsigned int i, size;
+#ifdef CHANGED
+    unsigned int endBss, stackLimit;
 
+#endif // CHANGED
     executable->ReadAt ((char *) &noffH, sizeof (noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) &&
             (WordToHost (noffH.noffMagic) == NOFFMAGIC))
         SwapHeader (&noffH);
     ASSERT (noffH.noffMagic == NOFFMAGIC);
+#ifdef CHANGED
+    endBss = noffH.initData.virtualAddr + noffH.initData.size + noffH.uninitData.size;
+    stackLimit =  endBss + UserHeapSize;
+    brk =  endBss;
+    DEBUG('a', "brk init to %d\n", brk);
+#endif // CHANGED
 
-// how big is address space?
-    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize;   // we need to increase the size
+    // how big is address space?
+#ifndef CHANGED
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size + UserStackSize ;
+#else
+    size = noffH.code.size + noffH.initData.size + noffH.uninitData.size
+           + UserHeapSize + UserStackSize ;
+#endif
+    // we need to increase the size
     // to leave room for the stack
     numPages = divRoundUp (size, PageSize);
     size = numPages * PageSize;
@@ -126,16 +141,22 @@ AddrSpace::AddrSpace (OpenFile * executable) {
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
            numPages, size);
-// first, set up the translation
+    // first, set up the translation
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++) {
         pageTable[i].virtualPage = i; // for now, virtual page # = phys page #
 #ifndef CHANGED
         pageTable[i].physicalPage = i;
-#else
-        pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
-#endif
         pageTable[i].valid = TRUE;
+#else // CHANGED
+        // If the whole page is in the heap, we invalidate the page
+        if ((i * PageSize >= endBss && (i + 1) * PageSize < stackLimit)) {
+            pageTable[i].valid = false;
+        } else {
+            pageTable[i].valid = true;
+            pageTable[i].physicalPage = frameprovider->GetEmptyFrame();
+        }
+#endif
         pageTable[i].use = FALSE;
         pageTable[i].dirty = FALSE;
         pageTable[i].readOnly = FALSE;    // if the code segment was entirely on
@@ -259,6 +280,34 @@ bool AddrSpace::HandleReadOnly(int vaddr) {
     return false;
 }
 
+int AddrSpace::Sbrk(unsigned int n) {
+    unsigned int i, oldBrk, newBrk;
+    unsigned int startPage;
+    unsigned int endPage;
+
+    oldBrk = brk; // save the old brk to return
+    newBrk = brk + n;
+    printf("\n%d, %d\n", brk + n, numPages * PageSize - UserStackSize);
+    // if there is not enough space available in the heap -> error
+    if (brk + n >= numPages * PageSize -  UserStackSize)
+        return -1;
+
+    startPage = brk / PageSize;
+    endPage = newBrk / PageSize;
+
+    for (i = startPage; i <= endPage; ++i) {
+        if (!pageTable[i].valid) {
+            int frame = frameprovider->GetEmptyFrame();
+            if (frame == -1)
+                return -1;
+            pageTable[i].valid = true;
+            pageTable[i].physicalPage = frame;
+        }
+    }
+
+    brk = newBrk;
+    return oldBrk;
+}
 #endif
 
 //----------------------------------------------------------------------
