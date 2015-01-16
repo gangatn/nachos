@@ -3,22 +3,37 @@
 #include "addrspace.h"
 #include <list>
 #include <queue>
+#include "synch.h"
 
 using namespace std;
 
 ProcessManager::ProcessManager()
 	: pids(MAX_PROCESS)
+	, processlist()
 {
 	pids.Mark(0);
 }
 
 ProcessManager::~ProcessManager()
 {
+  list<struct process_entry*>::iterator it;
+  struct process_entry *entry;
+  
+  it = processlist.begin();
 
+  while(!processlist.empty()) {
+    entry = *it;
+    processlist.erase(it);
+    delete entry->semproc; 
+   delete entry;
+  }
 }
 
 void ProcessManager::initProcess(Thread *th, int pid, int ppid)
 {
+	struct process_entry *entry = new struct process_entry;
+	entry->semproc = new Semaphore("process semaphore", 0);
+
 	th->maxtid = new int;
 	*(th->maxtid) = 1;
 
@@ -36,6 +51,9 @@ void ProcessManager::initProcess(Thread *th, int pid, int ppid)
 	th->pid = pid;
 	th->ppid = ppid;
 
+	entry->ppid = ppid;
+	entry->pid = pid;
+	processlist.push_front(entry);
 }
 
 void ProcessManager::Init(char *filename)
@@ -157,6 +175,9 @@ int ProcessManager::ForkExec(char *filename)
 
 void ProcessManager::Exit(int exit_code)
 {
+  	list<struct process_entry*>::iterator it;
+  	struct process_entry *entry;
+
 	pids.Clear(currentThread->pid);
 
 	if(pids.NumClear() >= MAX_PROCESS - 1)
@@ -165,11 +186,46 @@ void ProcessManager::Exit(int exit_code)
 	}
 	else
 	{
-		currentThread->Finish();
+	  // Tell that the process has terminated to the father
+	  for (it = processlist.begin() ; it != processlist.end() ; ++it) {
+	    entry = *it;
+	    if (entry->pid == currentThread->pid) {
+	      entry->semproc->V();
+	      break;
+	    }
+	  }
+
+	  // Attach all processes with the ppid of the currentThread to Init
+	  for (it = processlist.begin() ; it != processlist.end() ; ++it) {
+	    entry = *it;
+	    if (entry->ppid == currentThread->ppid)
+	      entry->ppid = 1;
+	  }
+	  
+	  currentThread->Finish();
 	}
 }
 
 int ProcessManager::WaitPid(int pid)
 {
+  list<struct process_entry*>::iterator it;
+  struct process_entry *entry;
+
+  for (it = processlist.begin() ; it != processlist.end() ; ++it) {
+    entry = *it;
+    if (entry->pid == pid) {
+      // check that pid is the ppid child
+      if (currentThread->pid != entry->ppid)
 	return -1;
+      entry->semproc->P();
+      processlist.erase(it);
+      pid = entry->pid;
+      delete entry->semproc;
+      delete entry;
+      return pid;
+    }
+  }
+  
+  // PID not found
+  return -1;
 }

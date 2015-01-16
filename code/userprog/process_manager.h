@@ -8,8 +8,16 @@
 
 #include "thread.h"
 #include "bitmap.h"
+#include <list>
 
 #define MAX_PROCESS 65536
+
+struct process_entry
+{
+  int ppid;
+  int pid;
+  Semaphore *semproc;
+};
 
 class ProcessManager
 {
@@ -32,6 +40,8 @@ public:
 private:
 	BitMap pids;
 	void initProcess(Thread *thread, int pid, int ppid);
+
+	std::list<struct process_entry*> processlist;
 };
 
 #endif /* PROCESS_MANAGER_H */

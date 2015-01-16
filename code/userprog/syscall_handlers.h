@@ -17,5 +17,6 @@ bool syscall_userthreadjoin(void);
 bool syscall_fork(void);
 bool syscall_exec(void);
 bool syscall_forkexec(void);
+bool syscall_waitpid(void);
 
 #endif /* SYSCALL_HANDLERS_H_ */

@@ -186,4 +186,12 @@ bool syscall_forkexec(void)
   RETURN(pid);
   return(true);
 }
+
+bool syscall_waitpid(void)
+{
+  int pid = PARAM(1);
+  int ret = processmanager->WaitPid(pid);
+  RETURN(ret);
+  return true;
+}
 #endif /* SYSCALL_HANDLERS_H_ */
