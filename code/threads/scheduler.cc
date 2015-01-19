@@ -66,7 +66,16 @@ Scheduler::ReadyToRun (Thread * thread) {
 
 Thread *
 Scheduler::FindNextToRun () {
-    return (Thread *) readyList->Remove ();
+	Thread *next;
+
+	next = (Thread *) readyList->Remove();
+	while (next != NULL && next->destroy_me)
+	{
+		delete next;
+		next = (Thread *) readyList->Remove();
+	}
+
+    return next;
 }
 
 //----------------------------------------------------------------------

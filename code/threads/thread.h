@@ -143,7 +143,10 @@ public:
 
     AddrSpace *space;       // User code this thread is running.
 
+
 #ifdef CHANGED
+
+	bool destroy_me;
 
     // Process
     int pid;

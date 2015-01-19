@@ -45,7 +45,9 @@ Thread::Thread (const char *threadName) {
     for (int r = NumGPRegs; r < NumTotalRegs; r++)
         userRegisters[r] = 0;
 
+
 #ifdef CHANGED
+	destroy_me = false;
     joinsem = new Semaphore("userthread semaphore", 0);
 #endif // CHANGED
 #endif // USER_PROGRAM

@@ -167,14 +167,26 @@ int ProcessManager::ForkExec(char *filename) {
 }
 
 void ProcessManager::Exit(int exit_code) {
-    list<struct process_entry*>::iterator it;
+;
     struct process_entry *entry;
 
     pids.Clear(currentThread->pid);
 
+
+	// We start to destroy all other threads
+
+	for (list<Thread*>::iterator it = currentThread->userthreads->begin();
+		 it != currentThread->userthreads->end();
+		 it++)
+	{
+		(*it)->destroy_me = true;
+	}
+
     if (pids.NumClear() >= MAX_PROCESS - 1) {
         interrupt->Halt();
     } else {
+		list<struct process_entry*>::iterator it;
+
         // Tell that the process has terminated to the father
         for (it = processlist.begin() ; it != processlist.end() ; ++it) {
             entry = *it;
