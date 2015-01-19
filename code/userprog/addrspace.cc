@@ -287,7 +287,6 @@ int AddrSpace::Sbrk(unsigned int n) {
 
     oldBrk = brk; // save the old brk to return
     newBrk = brk + n;
-    printf("\n%d, %d\n", brk + n, numPages * PageSize - UserStackSize);
     // if there is not enough space available in the heap -> error
     if (brk + n >= numPages * PageSize -  UserStackSize)
         return -1;
