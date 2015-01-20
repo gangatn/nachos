@@ -144,5 +144,8 @@ public:
 private:
     const char *name;
     // plus some other stuff you'll need to define
+#ifdef CHANGED
+    List *queue;
+#endif
 };
 #endif // SYNCH_H
