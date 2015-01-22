@@ -66,6 +66,7 @@ Scheduler::ReadyToRun (Thread * thread) {
 
 Thread *
 Scheduler::FindNextToRun () {
+#ifdef CHANGED
 	Thread *next;
 
 	next = (Thread *) readyList->Remove();
@@ -76,6 +77,9 @@ Scheduler::FindNextToRun () {
 	}
 
     return next;
+#else
+	return (Thread *) readyList->Remove();
+#endif
 }
 
 //----------------------------------------------------------------------
