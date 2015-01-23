@@ -19,7 +19,7 @@
 USERPROG_NOPROGRAM=syscall.c malloc_stub.c mem.c
 
 # source files that must be included in any userspace nachos program
-USERPROG_LIBS=start.S syscall.c malloc_stub.c mem.c
+USERPROG_LIBS=start.S syscall.c
 
 malloc_stub_EXTRA_SOURCES= mem.c
 
