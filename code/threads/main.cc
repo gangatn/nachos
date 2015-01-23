@@ -34,6 +34,11 @@
 //    -l lists the contents of the Nachos directory
 //    -D prints the contents of the entire file system
 //    -t tests the performance of the Nachos file system
+//    (next flag are only present with CHANGED)
+//    -mk create directory
+//    -cd change current directory
+//    -rd remove directory
+//    -ls list files in the current directory
 //
 //  NETWORK
 //    -n sets the network reliability
@@ -175,6 +180,24 @@ main (int argc, char **argv) {
         } else if (!strcmp (*argv, "-t")) {
             // performance test
             PerformanceTest ();
+#ifdef CHANGED
+        } else if (!strcmp (*argv, "-cd")) {
+            // change directory
+	    ASSERT(*(argv + 1) != NULL);
+            fileSystem->ChDir(*(argv + 1));
+        } else if (!strcmp (*argv, "-mk")) {
+            // make directory
+	    ASSERT(*(argv + 1) != NULL);
+            fileSystem->MkDir(*(argv + 1));
+        } else if (!strcmp (*argv, "-rd")) {
+            // remove directory
+	    ASSERT(*(argv + 1) != NULL);
+            fileSystem->RmDir(*(argv + 1));
+        } else if (!strcmp (*argv, "-ls")) {
+            // List directory
+	    ASSERT(*(argv + 1) != NULL);
+            fileSystem->LsDir(*(argv + 1));
+#endif
         }
 #endif // FILESYS
 #ifdef NETWORK
