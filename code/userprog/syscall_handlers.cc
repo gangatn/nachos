@@ -201,4 +201,18 @@ bool syscall_sbrk() {
     RETURN(ret);
     return true;
 }
+
+bool syscall_create(void) {
+    int sptr;
+    int size;
+    char filename[MAX_STRING_SIZE];
+
+    sptr = PARAM(1);
+    copyStringFromMachine(sptr, filename, MAX_STRING_SIZE);
+
+    size = PARAM(2);
+
+    RETURN(fileSystem->Create(filename, size) != -1);
+    return true;
+}
 #endif /* SYSCALL_HANDLERS_H_ */
