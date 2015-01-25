@@ -52,7 +52,7 @@ void* mem_alloc(size_t taille) {
     if (!pfba) {
         //pthread_mutex_unlock(&mutex);
         return NULL;
-    }
+	}
 
     prev = get_zone_libre_prec(pfba);
     next = get_zone_libre_suiv(pfba);
@@ -72,8 +72,8 @@ void* mem_alloc(size_t taille) {
         else if (prev)
             prev->next = next;
         // fprint_mem_state(getpid(), pthread_self(), 1, taille, pbb->size, ((char*)pbb) + BUSYBLK_HEADSIZE, mem_get_state());
-        
-        // pthread_mutex_unlock(&mutex);
+
+		// pthread_mutex_unlock(&mutex);
         return ((char*)pbba) + BUSYBLK_HEADSIZE;
     }
 
@@ -196,10 +196,37 @@ void mem_fit(mem_fit_function_t* function) {
 }
 
 struct fb* mem_fit_first(struct fb* pfba, size_t size) {
-    if (!pfba || pfba->size >= size)
+	char* growSize;
+	struct fb* pfbprec = fb_init;
+    if (pfba->size >= size)
         return pfba;
-    else
-        return mem_fit_first(pfba->next, size);
+	else if(!pfba) { // Pas d'espace suffisament grand
+		// On tente d'augmenter l'espace dispo
+		growSize = (char*) Sbrk(size); // valeur arbitraire >= size
+		if(growSize == (char*)-1)
+			return NULL;
+
+		mem_size += size;
+
+		if(fb_init == NULL) { // Tout l'espace est alloué
+			fb_init = (struct fb*) growSize;
+			fb_init->size = size;
+			fb_init->next = NULL;
+		} else if(((char*)pfbprec + pfbprec->size) + 1 == mem + mem_size) {
+			// fusion de l'espace disponible avec les nouvelles pages dispo
+			pfbprec->size += size;
+			pfbprec->next = NULL;
+			return pfbprec;
+		}
+
+		pfbprec->next = (struct fb*) growSize;
+		pfbprec->next->size = size;
+		pfbprec->next->next = NULL;
+		return pfbprec->next;
+	} else {
+    	pfbprec = pfba;
+		return mem_fit_first(pfba->next, size);
+	}
 }
 
 /* Facultatif */
