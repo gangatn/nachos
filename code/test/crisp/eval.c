@@ -19,6 +19,12 @@ struct sexp *eval_add(struct sexp *sexp)
 
 	while(cur != NULL)
 	{
+		if (cur->type != SEXP_CONS)
+		{
+			PutString("error: + arguments are not a valid list\n");
+			return NULL;
+		}
+
 		arg = eval(cur->cons.car);
 		if(arg->type != SEXP_ATOM_INT)
 		{
