@@ -16,13 +16,13 @@
 # List of C files that are not userspace programs (in test/ subdirectory)
 # => add here C files that are user-space libraries
 # all other C files will be compiled as a userspace nachos program
-USERPROG_NOPROGRAM=syscall.c malloc_stub.c mem.c crisp/sexp.c crisp/lexer.c \
-							 crisp/parse.c crisp/eval.c
+
+CRISP_SRC = crisp/sexp.c crisp/lexer.c crisp/parse.c crisp/eval.c
+STD_SRC = lib/mem.c
+USERPROG_NOPROGRAM=syscall.c $(CRISP_SRC) $(STD_SRC)
 
 # source files that must be included in any userspace nachos program
-USERPROG_LIBS=start.S syscall.c malloc_stub.c mem.c
-
-malloc_stub_EXTRA_SOURCES= mem.c
+USERPROG_LIBS=start.S syscall.c $(STD_SRC)
 
 # each program 'p' can specify extra sources in 'p'_EXTRA_SOURCES
 # => declare here program sources to add in addition to

@@ -1,28 +1,81 @@
-/*
- * mem.c
- *
- */
-#include "mem.h"
+#include "stdlib.h"
 #include "syscall.h"
-#define NULL ((void *)0)
-#define EXIT_FAILURE -1
+
+#ifndef MEM_STRATEGY
+#define MEM_STRATEGY mem_fit_first
+#endif
+
+#ifndef __BIGGEST_ALIGNEMENT__
+#define  __BIGGEST_ALIGNEMENT__ 4
+#endif
+
+#define MEM_INIT_SIZE 4096
+
+#define DO_ALIGN(val, align) ((val+(align-1))&~(align-1))
+#define FREEBLK_HEADSIZE (DO_ALIGN(sizeof(struct fb), __BIGGEST_ALIGNMENT__))
+#define BUSYBLK_HEADSIZE (DO_ALIGN(sizeof(struct bb), __BIGGEST_ALIGNMENT__))
+#define FREEBLK_MINSIZE FREEBLK_HEADSIZE + __BIGGEST_ALIGNMENT__
 
 #define exit Exit
 
+typedef struct fb fb;
+typedef fb* pfb;
+struct fb
+{
+    size_t size;
+    pfb next;
+};
+
+typedef struct bb bb;
+typedef bb* pbb;
+struct bb
+{
+    size_t size;
+};
+
+struct mem_state
+{
+    unsigned int nb_free;
+    unsigned int nb_busy;
+
+    size_t free;
+    size_t min_free;
+    size_t max_free;
+
+    size_t busy;
+    size_t min_busy;
+    size_t max_busy;
+
+    size_t segment_used;
+};
+
+/* Choix de la strategie et strategies usuelles */
+typedef struct fb* (mem_fit_function_t)(struct fb *, size_t);
+
+struct fb* mem_fit_first(struct fb*, size_t);
+struct fb* mem_fit_best(struct fb*, size_t);
+struct fb* mem_fit_worst(struct fb*, size_t);
+
+/* Fonctions ajoutés */
+pfb get_zone_libre_prec(void* zone);
+pfb get_zone_libre_suiv(void* zone);
+
 pfb fb_init;
-char* mem_start;
+char* mem_start = NULL;
 mem_fit_function_t* mem_fit_function;
 size_t mem_size;
-char * mem;
-//pthread_mutex_t mutex;
+char * mem = NULL;
 
-void mem_init(size_t taille) {
+static void mem_init()
+{
+	size_t taille = MEM_INIT_SIZE;
+
     if (taille < 1 || taille < sizeof(fb))
         exit(EXIT_FAILURE);
     mem = (char *) Sbrk(taille);
     if(mem ==(char*) -1) {
-      PutString("Sbrk fail to init\n");
-      exit(EXIT_FAILURE);
+		PutString("Sbrk fail to init\n");
+		exit(EXIT_FAILURE);
     }
     fb_init = (struct fb*)mem;
     fb_init->size = taille;
@@ -32,25 +85,23 @@ void mem_init(size_t taille) {
     mem_start = mem;
     mem_fit_function = MEM_STRATEGY;
 
-    //char nom_log[256];
-
-    //snprintf(nom_log, 50, "mem_%d.log", getpid());
-
-    //pthread_mutex_init(&mutex, NULL);
 }
 
-void* mem_alloc(size_t taille) {
+static void* mem_alloc(size_t taille) {
     struct fb *prev, *next, *pfba;
     struct bb *pbba;
     size_t bb_size = BUSYBLK_HEADSIZE + taille;
     char* ptr;
 
-    //pthread_mutex_lock(&mutex);
+
+	if(mem == NULL)
+	{
+		mem_init();
+	}
 
     /* on cherche un freeblock de la taille du busyblock */
     pfba = mem_fit_function(fb_init, bb_size);
     if (!pfba) {
-        //pthread_mutex_unlock(&mutex);
         return NULL;
 	}
 
@@ -71,9 +122,7 @@ void* mem_alloc(size_t taille) {
             fb_init = next;
         else if (prev)
             prev->next = next;
-        // fprint_mem_state(getpid(), pthread_self(), 1, taille, pbb->size, ((char*)pbb) + BUSYBLK_HEADSIZE, mem_get_state());
 
-		// pthread_mutex_unlock(&mutex);
         return ((char*)pbba) + BUSYBLK_HEADSIZE;
     }
 
@@ -87,18 +136,14 @@ void* mem_alloc(size_t taille) {
     pbba = (struct bb*)((char*)pbba - __BIGGEST_ALIGNMENT__);
     pbba->size = bb_size + (ptr - (char*)pbba);
     pfba->size -= pbba->size;
-    //fprint_mem_state(getpid(), pthread_self(), 1, taille, pbb->size, ((char*)pbb) + BUSYBLK_HEADSIZE, mem_get_state());
 
-    // pthread_mutex_unlock(&mutex);
     return ((char*)pbba) + BUSYBLK_HEADSIZE;
 }
 
-void mem_free(void* ptr) {
+static void mem_free(void* ptr) {
     struct fb *next, *prev, *p;
     struct bb* pbba = (struct bb*)(((char*)ptr) - BUSYBLK_HEADSIZE);
     struct fb* pfba = (struct fb*)pbba;
-    //int pbba_size = pbba->size;
-    // pthread_mutex_lock(&mutex);
 
     /*  prev = get_zone_libre_prec(pfb); */
     prev = NULL;
@@ -126,9 +171,6 @@ void mem_free(void* ptr) {
 
         /* mise à jour du premier freeblock */
         fb_init = pfba;
-        //fprint_mem_state(getpid(), pthread_self(), 0, 0, pbb_size, ptr, mem_get_state());
-
-        //pthread_mutex_unlock(&mutex);
         return;
     }
 
@@ -140,9 +182,6 @@ void mem_free(void* ptr) {
             prev->size += next->size;
             prev->next = next->next;
         }
-        //fprint_mem_state(getpid(), pthread_self(), 0, 0, pbb_size, ptr, mem_get_state());
-
-        //pthread_mutex_unlock(&mutex);
         return;
     }
 
@@ -155,44 +194,11 @@ void mem_free(void* ptr) {
         pfba->size += next->size;
         pfba->next = next->next;
     }
-    //fprint_mem_state(getpid(), pthread_self(), 0, 0, pbb_size, ptr, mem_get_state());
-
-    //pthread_mutex_unlock(&mutex);
 }
 
-size_t mem_get_size(void * ptr) { // pour le realloc
-    //pthread_mutex_lock(&mutex);
+static size_t mem_get_size(void * ptr) { // pour le realloc
     pbb pbusy = (pbb)((char*)ptr - BUSYBLK_HEADSIZE);
-    //pthread_mutex_unlock(&mutex);
     return pbusy->size - sizeof(bb);
-}
-
-/* Itérateur sur le contenu de l'allocateur */
-void mem_show(void (*print)(void *, size_t, int free)) {
-    pfb f = fb_init;
-    char* ptr = mem_start;
-    char* mem_end = mem_start + mem_size;
-
-    //pthread_mutex_lock(&mutex);
-
-    while (ptr < mem_end) {
-        if (f && (char*) f == ptr) {
-            /* ptr sur f: on est sur un freeblock */
-            print(ptr, f->size, 1);
-            ptr += f->size;
-            f = f->next;
-        } else {
-            /* ptr avant f: on est sur un busyblock */
-            print(ptr, ((pbb)ptr)->size, 0);
-            ptr += ((pbb)ptr)->size;
-        }
-    }
-
-    //pthread_mutex_unlock(&mutex);
-}
-
-void mem_fit(mem_fit_function_t* function) {
-    mem_fit_function = function;
 }
 
 struct fb* mem_fit_first(struct fb* pfba, size_t size) {
@@ -318,93 +324,61 @@ pfb get_zone_libre_suiv(void* zone) {
     return ptr;
 }
 
-struct mem_state mem_get_state() {
-    struct mem_state state;
-
-    char* p = mem_start;
-    pfb free = fb_init;
-    char* mem_end = mem_start + mem_size;
-
-    pfb fcur;
-    pbb bcur;
-
-    char* first_busy_down = NULL;
-    char* last_busy_up;
-
-    state.nb_free = 0;
-    state.nb_busy = 0;
-    state.free = 0;
-    state.min_free = 0;
-    state.max_free = 0;
-    state.busy = 0;
-    state.min_busy = 0;
-    state.max_busy = 0;
-    state.segment_used = 0;
-
-    while (p < mem_end) {
-
-        if ((char*)free == p) {
-            /* le bloc courant est un freeblock */
-            fcur = (pfb)p;
-
-            state.nb_free++;
-            state.free += fcur->size;
-
-            if (fcur->size < state.min_free || state.min_free == 0)
-                state.min_free = fcur->size;
-
-            if (fcur->size > state.max_free || state.max_free == 0)
-                state.max_free = fcur->size;
-
-            p += fcur->size;
-            free = fcur->next;
-
-            continue;
-        }
-
-        /* le bloc courant est un busyblock */
-        bcur = (pbb)p;
-
-        state.nb_busy++;
-        state.busy += bcur->size;
-
-        if (bcur->size < state.min_busy || state.min_busy == 0)
-            state.min_busy = bcur->size;
-
-        if (bcur->size > state.max_busy || state.max_busy == 0)
-            state.max_busy = bcur->size;
-
-        p += bcur->size;
-
-        /* on a trouvé le premier busyblock */
-        if (!first_busy_down)
-            first_busy_down = (char*)bcur;
-
-        /* recherche de la borne supérieure du dernier busyblock */
-        last_busy_up = p;
-    }
-
-    /* calcul de la taille du segment mémoire utilisé */
-    if (first_busy_down)
-        state.segment_used = last_busy_up - first_busy_down;
-
-    return state;
+void *malloc(size_t size)
+{
+	return mem_alloc(size);
 }
 
-//void fprint_mem_state(pid_t pid, pthread_t tid, int is_alloc, size_t asked_size, size_t size, char* addr, struct mem_state state) {
-//   fprintf(stderr, "##%d;", pid);
-//   fprintf(stderr, "%lu;", (unsigned long)tid);
-//   fprintf(stderr, "%p;", addr);
-//   fprintf(stderr, "%d;", is_alloc);
-//   fprintf(stderr, "%zu;", asked_size);
-//   fprintf(stderr, "%zu;", size);
-//   fprintf(stderr, "%d;", state.nb_free);
-//   fprintf(stderr, "%d;", state.nb_busy);
-//   fprintf(stderr, "%zu;", state.segment_used);
-//   fprintf(stderr, "%zu;", state.free);
-//   fprintf(stderr, "%zu;", state.min_free);
-//   fprintf(stderr, "%zu;", state.max_free);
-//   fprintf(stderr, "%zu;", state.busy);
-//   fprintf(stderr, "%zu;", state.min_busy);
-//   fprintf(stderr, "%zu\n", state.max_busy);
-//}
+void *realloc(void *ptr, size_t size)
+{
+	size_t s;
+	char *result;
+
+	if (!ptr)
+	{
+		return mem_alloc(size);
+	}
+
+	if (mem_get_size(ptr) >= size)
+	{
+		return ptr;
+    }
+
+	result = mem_alloc(size);
+
+	if (!result)
+	{
+		return NULL;
+	}
+
+	for (s = 0; s < mem_get_size(ptr); s++)
+        result[s] = ((char *) ptr)[s];
+
+	mem_free(ptr);
+	return result;
+}
+
+/* TODO: Optimize the set, maybe use memset */
+void *calloc(size_t count, size_t size)
+{
+	size_t total_size = count * size;
+	int i;
+	char *res;
+
+	res = mem_alloc(total_size);
+
+	if (res)
+	{
+		for (i = 0; i < total_size; i++)
+            res[i] = 0;
+	}
+	return res;
+}
+
+void free(void *ptr)
+{
+	if (ptr)
+	{
+		mem_free(ptr);
+	}
+}

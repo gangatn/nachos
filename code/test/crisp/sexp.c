@@ -1,10 +1,8 @@
+#include <stdlib.h>
+
 #include "sexp.h"
 #include "syscall.h"
 
-/* JD: '..' include isn't very nice
- * maybe use real include dir
- */
-#include "../malloc_stub.h"
 
 /* sexp_free:
  * Free the whole S-Expression recursively */

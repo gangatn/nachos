@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "crisp/parse.h"
 #include "crisp/eval.h"
 #include "syscall.h"
@@ -21,5 +23,5 @@ int main(void)
 		parsed = parse();
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }

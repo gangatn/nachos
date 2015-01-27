@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "parse.h"
 #include "lexer.h"
 #include "syscall.h"
@@ -63,9 +64,10 @@ static struct sexp *sexp(void)
 		return sexp_make_char(token_str[0]);
 	case TOKEN_INT:
 		return sexp_make_int(parse_int());
-	case TOKEN_NONE:
 	case TOKEN_ERR:
 		PutString("Error: bad token\n");
+		break;
+	case TOKEN_NONE:
 		break;
 	}
 	return NULL;

@@ -1,5 +1,6 @@
+#include <stdlib.h>
 #include "syscall.h"
-#include "malloc_stub.h"
+
 int main() {
     PutString("trying malloc...\n");
     int *a =(int*) malloc( sizeof(int));

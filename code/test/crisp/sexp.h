@@ -13,8 +13,6 @@
 #ifndef SEXP_H_
 #define SEXP_H_
 
-#define NULL (0)
-
 enum sexp_type
 {
 	SEXP_CONS,
