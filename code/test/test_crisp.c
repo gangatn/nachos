@@ -7,12 +7,19 @@ int main(void)
 	struct sexp *parsed, *result;
 
 	parsed = parse();
-	result = eval(parsed);
 
-	sexp_print(result);
-	PutChar('\n');
+	while (parsed != NULL)
+	{
+		result = eval(parsed);
 
-	sexp_free(result);
-	sexp_free(parsed);
+		sexp_print(result);
+		PutChar('\n');
+
+		sexp_free(result);
+		sexp_free(parsed);
+
+		parsed = parse();
+	}
+
 	return 0;
 }
