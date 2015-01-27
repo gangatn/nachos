@@ -56,6 +56,26 @@ static struct sexp *sexp(void)
 		NEXT();
 	    return sexp_list();
 	}
+	case TOKEN_QUOTE:
+	{
+		NEXT();
+		if(lookahead != TOKEN_OPEN)
+		{
+			PutString("Error: syntax error, ' expect an {\n");
+			return NULL;
+		}
+		else
+		{
+			struct sexp *sexp;
+
+			NEXT();
+			sexp = sexp_list();
+			return sexp_make_cons(
+				sexp_make_sym("quote"),
+				sexp_make_cons(sexp, NULL)
+				);
+		}
+	}
 	case TOKEN_STR:
 		return sexp_make_str(token_str);
 	case TOKEN_SYM:

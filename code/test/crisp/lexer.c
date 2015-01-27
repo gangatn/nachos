@@ -165,11 +165,23 @@ int lexer_next_token(void)
 	/* Characters */
 	else if (c == '\'')
 	{
-		/* TODO: Handle escaping '\144' etc */
+		/*
+		 * Once again we got an ambigous situation
+		 * basically if c is alnum, we are dealing with a character
+		 * otherwise it's a quote token
+		 */
 		c = getc();
-		PUSH_CHAR(c);
-		c = getc();
-		return c != '\'' ? TOKEN_ERR : TOKEN_CHAR;
+		if (isalnum(c))
+		{
+			PUSH_CHAR(c);
+			c = getc();
+			return c != '\'' ? TOKEN_ERR : TOKEN_CHAR;
+		}
+		else
+		{
+			ungetc(c);
+			return TOKEN_QUOTE;
+		}
 	}
 	else if (c == 0 || c == -1)
 	{
