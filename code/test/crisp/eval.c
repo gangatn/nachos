@@ -13,20 +13,22 @@ struct sexp *eval_add(struct sexp *sexp)
 {
 	int result = 0;
 	struct sexp *cur = sexp;
-	struct sexp *car;
+	struct sexp *arg;
 
 	while(cur != NULL)
 	{
-		car = cur->cons.car;
-		if(car->type != SEXP_ATOM_INT)
+		arg = eval(cur->cons.car);
+		if(arg->type != SEXP_ATOM_INT)
 		{
 			/* Temporary error message */
 			PutString("error: + needs number as argument\n");
+			sexp_free(arg);
 			return NULL;
 		}
 
-		result += car->atom_int;
+		result += arg->atom_int;
 		cur = cur->cons.cdr;
+		sexp_free(arg);
 	}
 	return sexp_make_int(result);
 }
