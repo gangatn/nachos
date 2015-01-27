@@ -10,6 +10,13 @@ static struct sexp *sexp_list(void);
 static int parse_int(void)
 {
 	int res = 0, i = 0;
+	int signedness = 1;
+
+	if(token_str[i] == '-' || token_str[i] == '+')
+	{
+		signedness = token_str[i] == '-' ? -1 : 1;
+		i++;
+	}
 
 	while (token_str[i] != '\0')
 	{
@@ -17,7 +24,7 @@ static int parse_int(void)
 		res += token_str[i] - '0';
 		i++;
 	}
-	return res;
+	return signedness * res;
 }
 
 static int lookahead;
