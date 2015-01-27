@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "sexp.h"
 #include "syscall.h"
@@ -72,29 +73,6 @@ struct sexp *sexp_make_char(char val)
 		ret->type = SEXP_ATOM_CHAR;
 		ret->atom_char = val;
 	}
-
-	return ret;
-}
-
-
-/* Our libc does not implements string functions yet */
-static int strlen(const char *s)
-{
-	int i = 0;
-	while(s[i]) i++;
-	return i;
-}
-
-static char *strdup(char *str)
-{
-	char *ret;
-	int len, i;
-
-	len = strlen(str);
-	ret = malloc((len+1) * sizeof(char));
-
-	for(i = 0; i < len; i++) ret[i] = str[i];
-	ret[i] = '\0';
 
 	return ret;
 }
