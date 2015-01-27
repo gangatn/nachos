@@ -78,6 +78,17 @@ struct sexp *eval_minus(struct sexp *sexp)
 	return sexp_make_int(result);
 }
 
+struct sexp *eval_quote(struct sexp *sexp)
+{
+	if (sexp->type != SEXP_CONS)
+	{
+		PutString("error: (quote) argument must be a list\n");
+		return NULL;
+	}
+
+	return sexp_dup(sexp->cons.car);
+}
+
 /*
  * We don't use the symbol table for builtins
  * This is only for convenience, but this may be changed later
