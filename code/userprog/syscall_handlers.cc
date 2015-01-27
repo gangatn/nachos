@@ -3,6 +3,7 @@
 
 #include "system.h"
 #include "userthread.h"
+#include "openfile_table.h"
 
 /*
  * Utility macro to get params and return value
@@ -215,4 +216,42 @@ bool syscall_create(void) {
     RETURN(fileSystem->Create(filename, size) != -1);
     return true;
 }
+
+bool syscall_open(void) {
+    int sptr;
+    int fd;
+    char filename[MAX_STRING_SIZE];
+    OpenFile *file;
+
+    sptr = PARAM(1);
+    copyStringFromMachine(sptr, filename, MAX_STRING_SIZE);
+
+    fd = openFileTable->Reserve();
+    if (fd == -1)
+	    goto out;
+
+    file = fileSystem->Open(filename);
+    if (!file) {
+	    fd = -1; goto out;
+    }
+
+    openFileTable->Set(fd, file);
+
+out:
+    RETURN(fd);
+    return true;
+}
+
+bool syscall_close(void) {
+    int fd;
+    OpenFile *file;
+
+    fd = PARAM(1);
+    file = openFileTable->Get(fd);
+    delete file;
+    openFileTable->Release(fd);
+
+    return true;
+}
+
 #endif /* SYSCALL_HANDLERS_H_ */

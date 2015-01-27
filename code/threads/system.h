@@ -52,6 +52,13 @@ extern FileSystem *fileSystem;
 #ifdef FILESYS
 #include "synchdisk.h"
 extern SynchDisk *synchDisk;
+
+#ifdef CHANGED
+#include "openfile_table.h"
+#define MAX_OPEN_FILE 10
+extern OpenFileTable *openFileTable;
+#endif
+
 #endif
 
 #ifdef NETWORK

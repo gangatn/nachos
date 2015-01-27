@@ -92,6 +92,6 @@ malloc_stub_EXTRA_SOURCES= mem.c
 #     synchconsole.cc userthread.cc))
 
 $(eval $(call define-flavor,wip,userprog filesys, synchconsole.cc userthread.cc \
-	   syscall_handlers.cc frameprovider.cc process_manager.cc))
+	   syscall_handlers.cc frameprovider.cc process_manager.cc openfile_table.cc))
 
 USER_FLAVORS=wip
