@@ -151,13 +151,21 @@ int ProcessManager::ForkExec(char *filename) {
     int pid;
     Thread *newThread;
     OpenFile *executable;
-    AddrSpace *space;
+	AddrSpace *space;
 
-    pid = pids.Find();
     executable = fileSystem->Open(filename);
-    space = new AddrSpace(executable);
+
+	if (executable == NULL)
+	{
+		DEBUG('t', "ERROR EXEC\n");
+		return -1;
+	}
+	
+	space = new AddrSpace(executable);
     delete executable;
-    newThread = new Thread("user process");
+	pid = pids.Find();
+
+	newThread = new Thread("user process");
     newThread->space = space;
 
     initProcess(newThread, pid, currentThread->pid);
