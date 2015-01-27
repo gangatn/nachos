@@ -144,3 +144,27 @@ void sexp_print(struct sexp *sexp)
 		}
 	}
 }
+
+struct sexp *sexp_dup(struct sexp *sexp)
+{
+	if(sexp != NULL)
+	{
+		switch (sexp->type)
+		{
+		case SEXP_CONS:
+		    return sexp_make_cons(
+				sexp_dup(sexp->cons.car),
+				sexp_dup(sexp->cons.cdr)
+				);
+		case SEXP_ATOM_INT:
+		    return sexp_make_int(sexp->atom_int);
+		case SEXP_ATOM_CHAR:
+			return sexp_make_char(sexp->atom_char);
+		case SEXP_ATOM_STR:
+		    return sexp_make_str(sexp->atom_str);
+		case SEXP_ATOM_SYM:
+			return sexp_make_sym(sexp->atom_sym);
+		}
+	}
+	return NULL;
+}

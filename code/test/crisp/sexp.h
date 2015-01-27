@@ -63,6 +63,8 @@ void sexp_free(struct sexp *sexp);
  */
 void sexp_print(struct sexp *sexp);
 
+struct sexp *sexp_dup(struct sexp *sexp);
+
 /* sexp_make_*:
  * Bunch of make functions to make allocation easier
  * It might seem not the best way to do it, but this is
