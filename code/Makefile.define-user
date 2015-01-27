@@ -18,7 +18,7 @@
 # all other C files will be compiled as a userspace nachos program
 
 CRISP_SRC = crisp/sexp.c crisp/lexer.c crisp/parse.c crisp/eval.c
-STD_SRC = lib/mem.c lib/string.c
+STD_SRC = lib/mem.c lib/string.c lib/ctype.c
 USERPROG_NOPROGRAM=syscall.c $(CRISP_SRC) $(STD_SRC)
 
 # source files that must be included in any userspace nachos program
@@ -96,5 +96,6 @@ test_crisp_EXTRA_SOURCES = crisp/lexer.c crisp/parse.c crisp/eval.c crisp/sexp.c
 
 $(eval $(call define-flavor,wip,userprog filesys-stub, synchconsole.cc userthread.cc \
 	   syscall_handlers.cc frameprovider.cc process_manager.cc))
+
 
 USER_FLAVORS=wip

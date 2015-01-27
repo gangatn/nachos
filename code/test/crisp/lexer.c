@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include "lexer.h"
 #include "syscall.h"
 
@@ -25,26 +26,11 @@ static inline void ungetc(int c)
 	ungetbuf = c;
 }
 
-static inline int isalpha(int c)
-{
-	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
-}
-
-static inline int isnum(int c)
-{
-	return (c >= '0' && c <= '9');
-}
-
-static inline int isblank(int c)
-{
-	return c == ' ' || c == '\t' || c == '\n';
-}
-
 /* Return first non whitespace character */
 static char skip_ws(void)
 {
 	char c;
-	do { c = getc(); } while(isblank(c));
+	do { c = getc(); } while(isspace(c));
 	return c;
 }
 
@@ -90,7 +76,7 @@ static inline int read_str(void)
 static inline int read_num(void)
 {
 	/* Note: Maybe this function will one day handle floating point number */
-	read_while(isnum);
+	read_while(isdigit);
 	return TOKEN_INT;
 }
 
@@ -101,6 +87,15 @@ static inline int read_num(void)
 	token_str[1] = '\0'; \
 	} while (0)
 
+/*
+ * lexer_next_token:
+ *
+ * return the next token from the standard input.
+ *
+ * Note: this solution does not uses deterministic finite automaton (DFA)
+ * this is slower but easier to make and modify
+ * Good as a start but definitly not a viable solution
+ */
 int lexer_next_token(void)
 {
 	char c = skip_ws();
@@ -132,7 +127,7 @@ int lexer_next_token(void)
 		c = getc();
 		ungetc(c);
 
-		if (isnum(c))
+		if (isdigit(c))
 		{
 			offset++;
 			return read_num();
@@ -154,7 +149,7 @@ int lexer_next_token(void)
 		return TOKEN_SYM;
 	}
 	/* Numbers */
-	else if (isnum(c))
+	else if (isdigit(c))
 	{
 		ungetc(c);
 		return read_num();
