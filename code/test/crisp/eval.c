@@ -110,7 +110,9 @@ struct sexp *eval_quote(struct sexp *sexp)
  */
 struct symbol builtins[] =
 {
-	{"+", eval_add}
+	{"+", eval_add },
+	{"-", eval_minus },
+	{"quote", eval_quote },
 };
 
 static eval_func get_builtin(const char *name)
