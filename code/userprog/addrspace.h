@@ -17,7 +17,7 @@
 #include "filesys.h"
 
 #define UserStackSize       262144  // increase this as necessary!
-#define UserHeapSize        262144
+#define UserHeapSize        524288
 
 class AddrSpace {
 public:
