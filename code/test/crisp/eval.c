@@ -35,6 +35,25 @@ struct sexp *eval_add(struct sexp *sexp)
 	return sexp_make_int(result);
 }
 
+/*
+ * We don't use the symbol table for builtins
+ * This is only for convenience, but this may be changed later
+ *
+ * Comparison:
+ * Pros:
+ * - We only deal with sexp in symbol table, and not native function pointers
+ * - We don't have to init the symbol table with builtins
+ *   Which is really convenient: the interpreter is ready to go
+ *
+ * Cons:
+ * - the evaluation can be slightly longer,
+ *   indeed we start by checking if it's builtins
+ *   and then check the symbol table
+ *
+ * Additional note:
+ * Builtins are using linear table, so the cost is O(n) to find the eval
+ * function where n is the count of builtins
+ */
 struct symbol builtins[] =
 {
 	{"+", eval_add}
