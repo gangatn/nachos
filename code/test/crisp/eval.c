@@ -41,6 +41,43 @@ struct sexp *eval_add(struct sexp *sexp)
 	return sexp_make_int(result);
 }
 
+struct sexp *eval_minus(struct sexp *sexp)
+{
+	int result = 0;
+	int first = 1;
+	struct sexp *cur = sexp;
+	struct sexp *arg;
+
+	while(cur != NULL)
+	{
+		if (cur->type != SEXP_CONS)
+		{
+			PutString("error: + arguments are not a valid list\n");
+			return NULL;
+		}
+
+		arg = eval(cur->cons.car);
+		if(arg->type != SEXP_ATOM_INT)
+		{
+			/* Temporary error message */
+			PutString("error: + needs number as argument\n");
+			sexp_free(arg);
+			return NULL;
+		}
+
+		if (first)
+		{
+			result += arg->atom_int;
+			first = 0;
+		}
+		else
+			result -= arg->atom_int;
+		cur = cur->cons.cdr;
+		sexp_free(arg);
+	}
+	return sexp_make_int(result);
+}
+
 /*
  * We don't use the symbol table for builtins
  * This is only for convenience, but this may be changed later
