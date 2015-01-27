@@ -2,6 +2,7 @@
 #include "syscall.h"
 
 /* For no we use a static buffer for convenience */
+static int offset = 0;
 char token_str[MAX_TOKEN_STR_SIZE] = { 0 };
 static int ungetbuf = -1;
 
@@ -50,7 +51,7 @@ static char skip_ws(void)
 static int read_while(int (*predicate)(int c))
 {
 	int c = getc();
-	int i = 0;
+	int i = offset;
 
 	while(predicate(c))
 	{
@@ -103,6 +104,7 @@ static inline int read_num(void)
 int lexer_next_token(void)
 {
 	char c = skip_ws();
+	offset = 0;
 
 	/* List delimitation */
 	if (c == '{')
@@ -119,7 +121,26 @@ int lexer_next_token(void)
 	else if (isop(c))
 	{
 		PUSH_CHAR(c);
-		return TOKEN_SYM;
+
+		/* There is an ambiguity if c is + or -
+		 * this can be a number start */
+		if(c != '+' && c != '-')
+		{
+			return TOKEN_SYM;
+		}
+
+		c = getc();
+		ungetc(c);
+
+		if (isnum(c))
+		{
+			offset++;
+			return read_num();
+		}
+		else
+		{
+		    return TOKEN_SYM;
+		}
 	}
 	else if (isalpha(c))
 	{
