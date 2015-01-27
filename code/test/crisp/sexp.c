@@ -10,6 +10,11 @@
  * Free the whole S-Expression recursively */
 void sexp_free(struct sexp *sexp)
 {
+	if(sexp == NULL)
+	{
+		return;
+	}
+
 	if(sexp->type == SEXP_CONS)
 	{
 		sexp_free(sexp->cons.car);
