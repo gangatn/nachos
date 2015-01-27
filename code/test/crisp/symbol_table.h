@@ -1,7 +1,14 @@
 /*
  * Symbol table
  *
- * */
+ * This uses an hash table (with linked list for collisions)
+ * You can only add sexp in the hashtable, this is for typing convenience
+ * and because we don't use the symbol table for other types than sexp
+ *
+ * The symbol_table structure allocation is left to the user,
+ * however, the internal table is allocated by this module
+ * (symbol_table_init function)
+ */
 #ifndef SYMBOL_TABLE_H_
 #define SYMBOL_TABLE_H_
 
