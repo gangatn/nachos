@@ -66,6 +66,8 @@ mem_fit_function_t* mem_fit_function;
 size_t mem_size;
 char * mem = NULL;
 
+int mem_num_alloc = 0, mem_num_free = 0;
+
 static void mem_init()
 {
 	size_t taille = MEM_INIT_SIZE;
@@ -107,6 +109,8 @@ static void* mem_alloc(size_t taille) {
 
     prev = get_zone_libre_prec(pfba);
     next = get_zone_libre_suiv(pfba);
+
+	mem_num_alloc++;
 
     if (pfba->size - bb_size < FREEBLK_MINSIZE) {
         /* il n'y a pas suffisamment d'espace dans le freeblock,
@@ -158,6 +162,8 @@ static void mem_free(void* ptr) {
     while (p && p < pfba)
         p = p->next;
     next = p;
+
+	mem_num_free++;
 
     if (!prev) {
         /* il n'existe pas de block libre précédent */
@@ -381,4 +387,9 @@ void free(void *ptr)
 	{
 		mem_free(ptr);
 	}
+}
+
+void mem_print_stats(void)
+{
+
 }
