@@ -22,10 +22,13 @@ int main(void)
 	{
 		result = eval(parsed, &st);
 
-		sexp_print(result);
-		PutChar('\n');
+		if(result != (void*)-1)
+		{
+			sexp_print(result);
+			PutChar('\n');
+			sexp_free(result);
+		}
 
-		sexp_free(result);
 		sexp_free(parsed);
 
 		parsed = parse();

@@ -4,6 +4,11 @@
 #include "sexp.h"
 #include "symbol_table.h"
 
+/*
+ * evaluate the S-Expression
+ *
+ * returns (void*)-1 on error
+ */
 struct sexp *eval(struct sexp *sexp, struct symbol_table *st);
 
 #endif /* EVAL_H_ */

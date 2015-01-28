@@ -4,6 +4,7 @@
 #include "symbol_table.h"
 #include "syscall.h"
 
+
 typedef struct sexp *(*eval_func)(struct sexp *sexp, struct symbol_table *st);
 
 struct symbol
@@ -11,6 +12,8 @@ struct symbol
 	const char *name;
     eval_func func;
 };
+
+#define ERROR (void *)-1
 
 struct sexp *eval_add(struct sexp *sexp, struct symbol_table *st)
 {
@@ -23,16 +26,16 @@ struct sexp *eval_add(struct sexp *sexp, struct symbol_table *st)
 		if (cur->type != SEXP_CONS)
 		{
 			PutString("error: + arguments are not a valid list\n");
-			return NULL;
+			return ERROR;
 		}
 
 		arg = eval(cur->cons.car, st);
 		if(arg->type != SEXP_ATOM_INT)
 		{
 			/* Temporary error message */
-			PutString("error: + needs number as argument\n");
+			PutString("Error: + needs number as argument\n");
 			sexp_free(arg);
-			return NULL;
+			return ERROR;
 		}
 
 		result += arg->atom_int;
@@ -53,17 +56,17 @@ struct sexp *eval_minus(struct sexp *sexp, struct symbol_table *st)
 	{
 		if (cur->type != SEXP_CONS)
 		{
-			PutString("error: + arguments are not a valid list\n");
-			return NULL;
+			PutString("Error: (+) arguments are not a valid list\n");
+			return ERROR;
 		}
 
 		arg = eval(cur->cons.car, st);
 		if(arg->type != SEXP_ATOM_INT)
 		{
 			/* Temporary error message */
-			PutString("error: + needs number as argument\n");
+			PutString("Error: (+) needs number as argument\n");
 			sexp_free(arg);
-			return NULL;
+			return ERROR;
 		}
 
 		if (first)
@@ -84,7 +87,7 @@ struct sexp *eval_quote(struct sexp *sexp, struct symbol_table *st)
 	if (sexp->type != SEXP_CONS)
 	{
 		PutString("Error: (quote) no arguments\n");
-		return NULL;
+		return ERROR;
 	}
 
 	return sexp_dup(sexp->cons.car);
@@ -98,7 +101,7 @@ struct sexp *eval_car(struct sexp *sexp, struct symbol_table *st)
     if (sexp->type != SEXP_CONS)
 	{
 		PutString("Error: (car) no arguments\n");
-		return NULL;
+		return ERROR;
 	}
 
 	list = eval(sexp->cons.car, st);
@@ -106,7 +109,7 @@ struct sexp *eval_car(struct sexp *sexp, struct symbol_table *st)
 	if (list->type != SEXP_CONS)
 	{
 		PutString("TypeError: (car) expect a list argument\n");
-		return NULL;
+		return ERROR;
 	}
 
 	res = sexp_dup(list->cons.car);
@@ -122,7 +125,7 @@ struct sexp *eval_cdr(struct sexp *sexp, struct symbol_table *st)
     if (sexp->type != SEXP_CONS)
 	{
 		PutString("Error: (cdr) no arguments\n");
-		return NULL;
+		return ERROR;
 	}
 
 	list = eval(sexp->cons.car, st);
@@ -130,7 +133,7 @@ struct sexp *eval_cdr(struct sexp *sexp, struct symbol_table *st)
 	if (list->type != SEXP_CONS)
 	{
 		PutString("TypeError: (cdr) expect a list argument\n");
-		return NULL;
+		return ERROR;
 	}
 
 	res = sexp_dup(list->cons.cdr);
@@ -163,14 +166,14 @@ struct sexp *eval_cons(struct sexp *sexp, struct symbol_table *st)
 	if(arg_count == -1)
 	{
 		PutString("FormatError: (cons) arguments are invalid\n");
-		return NULL;
+		return ERROR;
 	}
 	else if(arg_count != 2)
 	{
 		PutString("Error: (cons) expect exactly 2 arguments (");
 		PutInt(arg_count);
 		PutString(" given)\n");
-		return NULL;
+		return ERROR;
 	}
 
 	return sexp_make_cons(
@@ -179,6 +182,43 @@ struct sexp *eval_cons(struct sexp *sexp, struct symbol_table *st)
 		);
 }
 
+struct sexp *eval_define(struct sexp *sexp, struct symbol_table *st)
+{
+	struct sexp *arg;
+	struct sexp *target;
+
+	if (sexp->type != SEXP_CONS)
+	{
+		PutString("FormatError: (define) no arguments\n");
+		return ERROR;
+	}
+
+	arg = sexp->cons.car;
+
+	if (!arg || arg->type != SEXP_ATOM_SYM)
+	{
+		PutString("Error: (define) symbol expected\n");
+		return ERROR;
+	}
+
+	if (sexp->cons.cdr->type != SEXP_CONS)
+	{
+		PutString("FormatError: (define) arguments a incorrectly formated\n");
+		return ERROR;
+	}
+
+	target = eval(sexp->cons.cdr->cons.car, st);
+	if (symbol_table_set(st, arg->atom_sym, target) != 0)
+	{
+		PutString("Error: (define) could not set symbol: \"");
+		PutString(arg->atom_sym);
+		PutString("\"\n");
+		sexp_free(target);
+		return ERROR;
+	}
+	sexp_free(target);
+	return NULL;
+}
 
 /*
  * We don't use the symbol table for builtins
@@ -207,6 +247,7 @@ struct symbol builtins[] =
 	{"car", eval_car },
 	{"cdr", eval_cdr },
 	{"cons", eval_cons },
+	{"define", eval_define },
 };
 
 static eval_func get_builtin(const char *name)
@@ -243,17 +284,17 @@ struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 		PutString("Error: ");
 		sexp_print(sexp->cons.car);
 		PutString(" is not a function.\n");
-		return NULL;
+		return ERROR;
 	}
 	else if(sexp->type == SEXP_ATOM_SYM)
 	{
 		struct sexp *sym_sexp = symbol_table_get(st, sexp->atom_sym);
-		if (!sym_sexp)
+		if (sym_sexp == (void*)-1)
 		{
 			PutString("Error: unbound symbol: \"");
 			PutString(sexp->atom_sym);
 			PutString("\"\n");
-			return NULL;
+			return ERROR;
 		}
 		return eval(sym_sexp, st);
 	}
