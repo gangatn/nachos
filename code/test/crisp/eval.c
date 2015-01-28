@@ -250,6 +250,11 @@ struct sexp *eval_define(struct sexp *sexp, struct symbol_table *st)
 
 	target = sexp->cons.cdr == NULL ? NULL : eval(sexp->cons.cdr->cons.car, st);
 
+	if (target == ERROR)
+	{
+		return ERROR;
+	}
+
 	if (symbol_table_set(st, arg->atom_sym, target) != 0)
 	{
 		PutString("Error: (define) could not set symbol: \"");
@@ -556,15 +561,21 @@ struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 
 		if (is_function(sexp_fun))
 		{
-			return eval_exec_function(sexp_fun->cons.cdr, sexp->cons.cdr, st);
+			struct sexp *ret = eval_exec_function(
+				sexp_fun->cons.cdr,
+				sexp->cons.cdr, st
+				);
+			sexp_free(sexp_fun);
+			return ret;
 		}
 		else
 		{
 			PutString("Error: ");
 			sexp_print(sexp_fun);
 			PutString(" is not a function.\n");
+			sexp_free(sexp_fun);
+			return ERROR;
 		}
-		return ERROR;
 	}
 	else if(sexp->type == SEXP_ATOM_SYM)
 	{

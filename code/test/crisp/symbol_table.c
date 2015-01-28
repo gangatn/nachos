@@ -67,6 +67,7 @@ static void free_entries(struct entry *start)
 	{
 		free((char*)cur->key);
 		sexp_free(cur->data);
+		free(cur);
 		cur = cur->next;
 	}
 }
