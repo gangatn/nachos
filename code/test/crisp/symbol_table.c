@@ -126,8 +126,8 @@ int symbol_table_set(struct symbol_table *st,
 			/* We found the entry, we try to replace it */
 			struct sexp *replace;
 
-			replace = sexp_dup(entry->data);
-			if (replace == NULL)
+			replace = sexp_dup(sexp);
+			if (sexp && replace == NULL)
 			{
 				return 1;
 			}
