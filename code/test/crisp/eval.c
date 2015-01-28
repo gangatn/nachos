@@ -224,7 +224,10 @@ static eval_func get_builtin(const char *name)
 
 struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 {
-	if (sexp && sexp->type == SEXP_CONS)
+	if (sexp == NULL)
+		return NULL;
+
+	if (sexp->type == SEXP_CONS)
 	{
 		struct sexp *car = sexp->cons.car;
 		if (car && car->type == SEXP_ATOM_SYM)
@@ -241,6 +244,18 @@ struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 		sexp_print(sexp->cons.car);
 		PutString(" is not a function.\n");
 		return NULL;
+	}
+	else if(sexp->type == SEXP_ATOM_SYM)
+	{
+		struct sexp *sym_sexp = symbol_table_get(st, sexp->atom_sym);
+		if (!sym_sexp)
+		{
+			PutString("Error: unbound symbol: \"");
+			PutString(sexp->atom_sym);
+			PutString("\"\n");
+			return NULL;
+		}
+		return eval(sym_sexp, st);
 	}
 	else
 	{
