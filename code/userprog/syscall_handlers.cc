@@ -14,7 +14,7 @@
  * return the nth parameter, parameters starts from 1
  *
  * RETURN(val):
- * ~~~~~~~~~~
+ * ~~~~~~~~~~~~
  * return the given value
  */
 
@@ -60,6 +60,13 @@ static void copyStringFromMachine(int from, char *to, unsigned int size) {
     }
 
     to[size - 1] = '\0';
+}
+
+static void copyBufToMachine(char *from, int to, unsigned size) {
+    unsigned i;
+
+    for (i = 0; i < size; i++)
+        ASSERT(machine->WriteMem(to + i, 1, from[i]));
 }
 
 bool syscall_putstring(void) {
@@ -252,6 +259,38 @@ bool syscall_close(void) {
     openFileTable->Release(fd);
 
     return true;
+}
+
+bool syscall_read(void) {
+	int fd = -1, sptr, size;
+	char *buf;
+	OpenFile *file = NULL;
+
+	sptr = PARAM(1);
+	size = PARAM(2);
+	fd = PARAM(3);
+
+	if (size < 0)
+		goto error;
+	else if (size == 0) {
+		RETURN(0);
+		return true;
+	}
+
+	file = openFileTable->Get(fd);
+	if (size == -1)
+		goto error;
+
+	buf = new char[size];
+	if (!buf)
+		goto error;
+	RETURN(file->Read(buf, size));
+
+	copyBufToMachine(buf, sptr, size);
+	return true;
+error:
+	RETURN(-1);
+	return true;
 }
 
 #endif /* SYSCALL_HANDLERS_H_ */

@@ -58,9 +58,9 @@ SYSCALL_PROC(Exit, syscall_exit, int errcode)
 
 SYSCALL_FUNC(Create, syscall_create, int, char *name, int size)
 SYSCALL_FUNC(Open, syscall_open, int, char *name)
-SYSCALL_PROC(Write, NULL, char *buffer, int size, int file_id)
-SYSCALL_FUNC(Read, NULL, int, char *buffer, int size, int file_id)
-SYSCALL_PROC(Close, syscall_close, int file_id)
+SYSCALL_PROC(Write, NULL, char *buffer, int size, int fd)
+SYSCALL_FUNC(Read, syscall_read, int, char *buffer, int size, int fd)
+SYSCALL_PROC(Close, syscall_close, int fd)
 
 SYSCALL_PROC(PutChar, syscall_putchar, char c)
 SYSCALL_PROC(PutString, syscall_putstring, char *str)
