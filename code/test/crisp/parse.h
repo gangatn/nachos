@@ -6,6 +6,7 @@
 /*
  * Parse an S-Expression from standard input
  *
+ * returns (void*)-1 if there was a parsing error
  * TODO:
  *       - Make the lexer work for any buffer
  *       - Proper error handling

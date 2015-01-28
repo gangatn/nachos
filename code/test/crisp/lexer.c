@@ -188,5 +188,6 @@ int lexer_next_token(void)
 		return TOKEN_NONE;
 	}
 
+	PUSH_CHAR(c);
 	return TOKEN_ERR;
 }

@@ -31,14 +31,28 @@ static int parse_int(void)
 static int lookahead;
 #define NEXT() lookahead = lexer_next_token()
 
+#define ERROR ((void*)-1)
+
 static struct sexp *sexp_list(void)
 {
 	if (lookahead != TOKEN_CLOSE)
 	{
 		struct sexp *car, *cdr;
 		car = sexp();
+
+		if (car == ERROR)
+		{
+			return ERROR;
+		}
+
 		NEXT();
 		cdr = sexp_list();
+
+		if (cdr == ERROR)
+		{
+			sexp_free(car);
+			return ERROR;
+		}
 		return sexp_make_cons(car, cdr);
 	}
 	else
@@ -62,7 +76,7 @@ static struct sexp *sexp(void)
 		if(lookahead != TOKEN_OPEN)
 		{
 			PutString("Error: syntax error, ' expect an {\n");
-			return NULL;
+			return (void*)-1;
 		}
 		else
 		{
@@ -84,13 +98,17 @@ static struct sexp *sexp(void)
 		return sexp_make_char(token_str[0]);
 	case TOKEN_INT:
 		return sexp_make_int(parse_int());
+
+	case TOKEN_CLOSE:
 	case TOKEN_ERR:
-		PutString("Error: bad token\n");
+		PutString("Unexpected token : \"");
+		PutString(token_str);
+		PutString("\"\n");
 		break;
 	case TOKEN_NONE:
-		break;
+		return NULL;
 	}
-	return NULL;
+	return (void*)-1;
 }
 
 struct sexp *parse(void)

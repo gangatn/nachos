@@ -18,6 +18,12 @@ int main(void)
 
 	parsed = parse();
 
+	if (parsed == (void*)-1)
+	{
+		PutString("Syntax error.\n");
+		return EXIT_SUCCESS;
+	}
+
 	while (parsed != NULL)
 	{
 		result = eval(parsed, &st);
@@ -32,6 +38,11 @@ int main(void)
 		sexp_free(parsed);
 
 		parsed = parse();
+		if (parsed == (void*)-1)
+		{
+			PutString("Syntax error.\n");
+			return EXIT_SUCCESS;
+		}
 	}
 
 	return EXIT_SUCCESS;
