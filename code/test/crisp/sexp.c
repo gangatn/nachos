@@ -122,24 +122,20 @@ void sexp_print(struct sexp *sexp)
 			PutString(")");
 			break;
 		case SEXP_ATOM_INT:
-			PutString("Int(");
-		    PutInt(sexp->atom_int);
-			PutString(")");
+			PutInt(sexp->atom_int);
 			break;
 		case SEXP_ATOM_CHAR:
-			PutString("Char(");
+			PutChar('\'');
 		    PutChar(sexp->atom_char);
-			PutString(")");
+		    PutChar('\'');
 			break;
 		case SEXP_ATOM_STR:
-			PutString("Str(");
-		    PutString(sexp->atom_str);
-			PutString(")");
+			PutChar('"');
+			PutString(sexp->atom_str);
+			PutChar('"');
 			break;
 		case SEXP_ATOM_SYM:
-			PutString("Sym(");
-		    PutString(sexp->atom_sym);
-			PutString(")");
+			PutString(sexp->atom_sym);
 			break;
 		}
 	}
