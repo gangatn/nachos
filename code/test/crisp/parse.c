@@ -66,13 +66,13 @@ static struct sexp *sexp(void)
 		}
 		else
 		{
-			struct sexp *sexp;
+			struct sexp *quoted_sexp;
 
 			NEXT();
-			sexp = sexp_list();
+			quoted_sexp = sexp_list();
 			return sexp_make_cons(
 				sexp_make_sym("quote"),
-				sexp_make_cons(sexp, NULL)
+				sexp_make_cons(quoted_sexp, NULL)
 				);
 		}
 	}
