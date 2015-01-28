@@ -5,6 +5,20 @@
 #include "crisp/symbol_table.h"
 #include "syscall.h"
 
+
+
+void print_memory_report(void)
+{
+	/* this is what happen when we don't have valgrinds */
+	extern int mem_num_alloc, mem_num_free;
+	PutString("\n\n===============\n");
+	PutString("[memory report]\n");
+	PutString("===============\n");
+	PutString("| alloc: "); PutInt(mem_num_alloc); PutChar('\n');
+	PutString("| free : "); PutInt(mem_num_free); PutChar('\n');
+	PutString("===============\n");
+}
+
 int main(void)
 {
 	struct symbol_table st;
@@ -45,5 +59,8 @@ int main(void)
 		}
 	}
 
+	symbol_table_free(&st);
+
+	print_memory_report();
 	return EXIT_SUCCESS;
 }
