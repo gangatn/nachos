@@ -37,6 +37,9 @@ struct symbol_table
  *
  * the behavior is undefined if you call this function
  * twice without calling symbol_table_free
+ *
+ * This function return 0 if the symbol could be set
+ * another value otherwise
  */
 int symbol_table_init(struct symbol_table *st, int size);
 
@@ -52,9 +55,12 @@ void symbol_table_free(struct symbol_table *st);
  *
  * set the key with the given data, both the key and the data
  * (which is a sexp) are copied in memory
+
+ * This function return 0 if the symbol could be set
+ * another value otherwise
  *
- * If sexp is NULL, nothing is added to the symbol table
- * If key is NULL or empty, this function has no effect
+ * If key is NULL or empty, this will be considered as an error
+ *
  */
 int symbol_table_set(struct symbol_table *st,
 					 const char *key, struct sexp *sexp);
@@ -63,7 +69,7 @@ int symbol_table_set(struct symbol_table *st,
  * symbol_table_lookup:
  *
  * Try to find the entry with the given key in the symbol table
- * If no entry is found, return NULL
+ * If no entry is found, return (void*)-1
  */
 struct sexp *symbol_table_get(struct symbol_table *st, const char *key);
 

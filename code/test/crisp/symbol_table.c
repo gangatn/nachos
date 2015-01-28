@@ -40,6 +40,9 @@ static unsigned st_hash(struct symbol_table *st, const char *key)
  *
  * the behavior is undefined if you call this function
  * twice without calling symbol_table_free
+ *
+ * This function return 0 if the symbol could be set
+ * another value otherwise
  */
 int symbol_table_init(struct symbol_table *st, int size)
 {
@@ -91,9 +94,12 @@ void symbol_table_free(struct symbol_table *st)
  *
  * set the key with the given data, both the key and the data
  * (which is a sexp) are copied in memory
+
+ * This function return 0 if the symbol could be set
+ * another value otherwise
  *
- * If sexp is NULL, nothing is added to the symbol table
- * If key is NULL or empty, this function has no effect
+ * If key is NULL or empty, this will be considered as an error
+ *
  */
 int symbol_table_set(struct symbol_table *st,
 					 const char *key, struct sexp *sexp)
@@ -103,9 +109,9 @@ int symbol_table_set(struct symbol_table *st,
 
 	assert(st);
 
-	if (sexp == NULL || key == NULL || !*key)
+	if (key == NULL || !*key)
 	{
-		return 0;
+		return 1;
 	}
 
 	hashval = st_hash(st, key);
@@ -152,7 +158,7 @@ int symbol_table_set(struct symbol_table *st,
 
 
 	new->data = sexp_dup(sexp);
-	if (new->data == NULL)
+	if (sexp && new->data == NULL)
 	{
 		free((char*)new->key);
 		free(new);
@@ -178,7 +184,7 @@ int symbol_table_set(struct symbol_table *st,
  * symbol_table_lookup:
  *
  * Try to find the entry with the given key in the symbol table
- * If no entry is found, return NULL
+ * If no entry is found, return (void*)-1
  */
 struct sexp *symbol_table_get(struct symbol_table *st, const char *key)
 {
@@ -189,7 +195,7 @@ struct sexp *symbol_table_get(struct symbol_table *st, const char *key)
 
 	if (key == NULL || !*key)
 	{
-		return NULL;
+		return (void*)-1;
 	}
 
 	hashval = st_hash(st, key);
@@ -203,5 +209,5 @@ struct sexp *symbol_table_get(struct symbol_table *st, const char *key)
 		entry = entry->next;
 	}
 
-	return NULL;
+	return (void*)-1;
 }
