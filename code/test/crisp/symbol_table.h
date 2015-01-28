@@ -15,6 +15,8 @@
  *
  *    - Add function with no memory manipulation (no copy and no free)
  *      so when it's safe to just use the given pointer we do.
+ *
+ *    - Add unset function
  */
 #ifndef SYMBOL_TABLE_H_
 #define SYMBOL_TABLE_H_

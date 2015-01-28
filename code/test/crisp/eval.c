@@ -1,5 +1,8 @@
 #include <stddef.h>
 #include <string.h>
+#include <assert.h>
+#include <stdlib.h>
+
 #include "eval.h"
 #include "symbol_table.h"
 #include "syscall.h"
@@ -395,17 +398,79 @@ static int is_function(struct sexp *sexp)
 }
 
 
-/* TODO(Jeremy): implements save_args and restore args
-static struct entry *save_args(struct sexp *args, struct symbol_table *st)
+int save_sym(int argc, struct entry *saved,
+				struct sexp *args, struct symbol_table *st)
 {
-	return NULL;
+	int i;
+	for (i = 0; i < argc; i++)
+	{
+		/* elem can't fail by construction */
+		struct sexp *sym = elem(args, i);
+		struct sexp *dup;
+
+		/* We don't need to copy the key in memory */
+		saved[i].key = sym->atom_sym;
+
+		dup = symbol_table_get(st, sym->atom_sym);
+
+		if (dup != ERROR && dup != NULL)
+		{
+			dup = sexp_dup(dup);
+			if (dup == NULL)
+			{
+				PutString("Error: (save_args) not enough memory\n");
+				return 1;
+			}
+		}
+		saved[i].data = dup;
+	}
+	return 0;
 }
-*/
+
+
+static int apply_sym(int argc, struct sexp *fun_args,
+					  struct sexp *call_args, struct symbol_table *st)
+{
+	int i;
+
+	for (i = 0; i < argc; i++)
+	{
+		struct sexp *sym = elem(fun_args, i);
+		struct sexp *val = elem(call_args, i);
+
+		if (symbol_table_set(st, sym->atom_sym, val) != 0)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static int restore_sym(int argc, struct entry *saved, struct symbol_table *st)
+{
+	int i;
+	int success = 1;
+	for (i = 0; i < argc; i++)
+	{
+		if (saved[i].data != ERROR)
+		{
+			if (symbol_table_set(st, saved[i].key, saved[i].data) != 0)
+			{
+				PutString("Error: Could not restore the symbols!");
+				success = 0;
+			}
+			sexp_free(saved[i].data);
+		}
+	}
+	return success ? 0 : 1;
+}
 
 static struct sexp *eval_exec_function(struct sexp *function, struct sexp *args,
-								struct symbol_table *st)
+									   struct symbol_table *st)
 {
 	int fun_argc, given_argc;
+	struct entry *saved_symbols;
+	struct sexp *res;
 
 	fun_argc = list_len(function->cons.car);
 	given_argc = list_len(args);
@@ -420,11 +485,46 @@ static struct sexp *eval_exec_function(struct sexp *function, struct sexp *args,
 		return ERROR;
 	}
 
-	return NULL;
+	saved_symbols = malloc(sizeof(*saved_symbols) * fun_argc);
+	if (saved_symbols == NULL)
+	{
+		PutString("Error: (eval lambda) not enough memory\n");
+		return ERROR;
+	}
+
+	if (save_sym(fun_argc, saved_symbols, function->cons.car, st) != 0)
+	{
+		free(saved_symbols);
+		return ERROR;
+	}
+
+	if (apply_sym(fun_argc, function->cons.car, args, st) != 0)
+	{
+		if (restore_sym(fun_argc, saved_symbols, st) == 0)
+		{
+			PutString("Error: (eval lambda) canot apply parameters\n");
+		}
+		return ERROR;
+	}
+
+	res = eval(elem(function, 1), st);
+
+	if (restore_sym(fun_argc, saved_symbols, st) != 0)
+	{
+		sexp_free(res);
+		res = ERROR;
+	}
+
+	free(saved_symbols);
+
+	return res;
 }
 
 struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 {
+	/* evaluation an error sexp is a programmatic error */
+	assert(sexp != ERROR);
+
 	if (sexp == NULL)
 		return NULL;
 
