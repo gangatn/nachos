@@ -16,6 +16,12 @@ struct symbol
 
 #define ERROR ((void *)-1)
 
+/*
+ * elem:
+ * return the 'index''nt element of the list
+ * NULL if there is no such index
+ * -1 if the list is ill formed
+ */
 static struct sexp *elem(struct sexp *sexp, int index)
 {
 	while (index --> 0)
@@ -41,6 +47,10 @@ static struct sexp *elem(struct sexp *sexp, int index)
 	}
 }
 
+/*
+ * list_len:
+ * return the length of the given sexp list, -1 if it's not a list
+ */
 static int list_len(struct sexp *sexp)
 {
 	struct sexp *cur = sexp;
@@ -254,6 +264,11 @@ static int args_valid(struct sexp *sexp)
 	int i = 0;
 	struct sexp *arg;
 
+	/*
+	 * Arguments are either a list of symbols :
+	 * {one two three} or one symbol
+	 */
+
 	if (sexp && sexp->type == SEXP_ATOM_SYM)
 	{
 		return 1;
@@ -415,6 +430,11 @@ struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 
 	if (sexp->type == SEXP_CONS)
 	{
+		/*
+		 * If we deal with a list, we have to evaluate the list,
+		 * we start by evaluate the first element, and if it's a builtin
+		 * or a function we apply it, otherwise we return an error
+		 */
 		struct sexp *sexp_fun = eval(sexp->cons.car, st);
 
 		if (sexp_fun && sexp_fun->type == SEXP_ATOM_SYM)
@@ -427,6 +447,7 @@ struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 			}
 			else
 			{
+				/* The symbol is not builtin, we get the associated sexp of the symbol */
 				struct sexp *symval = symbol_table_get(st, sexp_fun->atom_sym);
 				sexp_free(sexp_fun);
 				sexp_fun = symval;
@@ -456,7 +477,7 @@ struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 
 		sym_sexp = symbol_table_get(st, sexp->atom_sym);
 
-		if (sym_sexp == (void*)-1)
+		if (sym_sexp == ERROR)
 		{
 			PutString("Error: unbound symbol: \"");
 			PutString(sexp->atom_sym);
@@ -467,6 +488,7 @@ struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 	}
 	else
 	{
+		/* It's already an atom we just copy the sexp */
 		return sexp_dup(sexp);
 	}
 }

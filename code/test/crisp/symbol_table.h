@@ -8,6 +8,10 @@
  * The symbol_table structure allocation is left to the user,
  * however, the internal table is allocated by this module
  * (symbol_table_init function)
+ *
+ * TODO:
+ *    - Make the local environment shadowing easier (this is really easy to do)
+ *      and this will simplify other code
  */
 #ifndef SYMBOL_TABLE_H_
 #define SYMBOL_TABLE_H_
