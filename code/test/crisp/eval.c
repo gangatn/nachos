@@ -82,11 +82,59 @@ struct sexp *eval_quote(struct sexp *sexp)
 {
 	if (sexp->type != SEXP_CONS)
 	{
-		PutString("error: (quote) argument must be a list\n");
+		PutString("Error: (quote) no arguments\n");
 		return NULL;
 	}
 
 	return sexp_dup(sexp->cons.car);
+}
+
+struct sexp *eval_car(struct sexp *sexp)
+{
+	struct sexp *list;
+	struct sexp *res;
+
+    if (sexp->type != SEXP_CONS)
+	{
+		PutString("Error: (car) no arguments\n");
+		return NULL;
+	}
+
+	list = eval(sexp->cons.car);
+
+	if (list->type != SEXP_CONS)
+	{
+		PutString("TypeError: (car) expect a list argument\n");
+		return NULL;
+	}
+
+	res = sexp_dup(list->cons.car);
+	sexp_free(list);
+	return res;
+}
+
+struct sexp *eval_cdr(struct sexp *sexp)
+{
+	struct sexp *list;
+	struct sexp *res;
+
+    if (sexp->type != SEXP_CONS)
+	{
+		PutString("Error: (cdr) no arguments\n");
+		return NULL;
+	}
+
+	list = eval(sexp->cons.car);
+
+	if (list->type != SEXP_CONS)
+	{
+		PutString("TypeError: (cdr) expect a list argument\n");
+		return NULL;
+	}
+
+	res = sexp_dup(list->cons.cdr);
+	sexp_free(list);
+	return res;
 }
 
 /*
@@ -113,6 +161,8 @@ struct symbol builtins[] =
 	{"+", eval_add },
 	{"-", eval_minus },
 	{"quote", eval_quote },
+	{"car", eval_car },
+	{"cdr", eval_cdr },
 };
 
 static eval_func get_builtin(const char *name)
