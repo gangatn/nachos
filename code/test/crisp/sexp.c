@@ -108,7 +108,7 @@ void sexp_print(struct sexp *sexp)
 {
 	if(sexp == NULL)
 	{
-		PutString("Nil");
+		PutString("nil");
 	}
 	else
 	{
