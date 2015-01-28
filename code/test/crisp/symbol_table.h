@@ -11,7 +11,10 @@
  *
  * TODO:
  *    - Make the local environment shadowing easier (this is really easy to do)
- *      and this will simplify other code
+ *      and this will simplify other code.
+ *
+ *    - Add function with no memory manipulation (no copy and no free)
+ *      so when it's safe to just use the given pointer we do.
  */
 #ifndef SYMBOL_TABLE_H_
 #define SYMBOL_TABLE_H_
