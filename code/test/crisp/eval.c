@@ -137,6 +137,48 @@ struct sexp *eval_cdr(struct sexp *sexp)
 	return res;
 }
 
+static int list_len(struct sexp *sexp)
+{
+	struct sexp *cur = sexp;
+	int i = 0;
+
+	while(cur)
+	{
+		if(cur->type != SEXP_CONS)
+		{
+			/* Invalid list */
+			return -1;
+		}
+		i++;
+		cur = cur->cons.cdr;
+	}
+	return i;
+}
+
+struct sexp *eval_cons(struct sexp *sexp)
+{
+	int arg_count = list_len(sexp);
+
+	if(arg_count == -1)
+	{
+		PutString("FormatError: (cons) arguments are invalid\n");
+		return NULL;
+	}
+	else if(arg_count != 2)
+	{
+		PutString("Error: (cons) expect exactly 2 arguments (");
+		PutInt(arg_count);
+		PutString(" given)\n");
+		return NULL;
+	}
+
+	return sexp_make_cons(
+		eval(sexp->cons.car),
+		eval(sexp->cons.cdr->cons.car)
+		);
+}
+
+
 /*
  * We don't use the symbol table for builtins
  * This is only for convenience, but this may be changed later
@@ -163,6 +205,7 @@ struct symbol builtins[] =
 	{"quote", eval_quote },
 	{"car", eval_car },
 	{"cdr", eval_cdr },
+	{"cons", eval_cons },
 };
 
 static eval_func get_builtin(const char *name)
