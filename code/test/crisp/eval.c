@@ -201,13 +201,15 @@ struct sexp *eval_define(struct sexp *sexp, struct symbol_table *st)
 		return ERROR;
 	}
 
-	if (sexp->cons.cdr->type != SEXP_CONS)
+	if (sexp->cons.cdr && sexp->cons.cdr->type != SEXP_CONS)
 	{
 		PutString("FormatError: (define) arguments a incorrectly formated\n");
 		return ERROR;
 	}
 
-	target = eval(sexp->cons.cdr->cons.car, st);
+
+	target = sexp->cons.cdr == NULL ? NULL : eval(sexp->cons.cdr->cons.car, st);
+
 	if (symbol_table_set(st, arg->atom_sym, target) != 0)
 	{
 		PutString("Error: (define) could not set symbol: \"");
