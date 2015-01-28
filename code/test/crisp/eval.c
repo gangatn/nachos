@@ -240,6 +240,6 @@ struct sexp *eval(struct sexp *sexp)
 	}
 	else
 	{
-		return sexp;
+		return sexp_dup(sexp);
 	}
 }
