@@ -36,7 +36,7 @@ USERPROG_LIBS=start.S syscall.c $(STD_SRC)
 # USERPROG_LIBS         = start.S nachos-libc.c
 # bigtest_EXTRA_SOURCES = bigtest_extra.c
 
-test_crisp_EXTRA_SOURCES = crisp/lexer.c crisp/parse.c crisp/eval.c crisp/sexp.c
+test_crisp_EXTRA_SOURCES = $(CRISP_SRC)
 
 
 # IMPORTANT: the 4 original user programs (halt, ...) cannot have extra
