@@ -17,8 +17,8 @@
 # => add here C files that are user-space libraries
 # all other C files will be compiled as a userspace nachos program
 
-CRISP_SRC = crisp/sexp.c crisp/lexer.c crisp/parse.c crisp/eval.c
-STD_SRC = lib/mem.c lib/string.c lib/ctype.c
+CRISP_SRC = crisp/sexp.c crisp/lexer.c crisp/parse.c crisp/eval.c crisp/symbol_table.c
+STD_SRC = lib/mem.c lib/string.c lib/ctype.c lib/abort.c lib/assert.c
 USERPROG_NOPROGRAM=syscall.c $(CRISP_SRC) $(STD_SRC)
 
 # source files that must be included in any userspace nachos program
