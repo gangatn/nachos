@@ -1,9 +1,10 @@
 #include <stddef.h>
 #include <string.h>
 #include "eval.h"
+#include "symbol_table.h"
 #include "syscall.h"
 
-typedef struct sexp *(*eval_func)(struct sexp *sexp);
+typedef struct sexp *(*eval_func)(struct sexp *sexp, struct symbol_table *st);
 
 struct symbol
 {
@@ -11,7 +12,7 @@ struct symbol
     eval_func func;
 };
 
-struct sexp *eval_add(struct sexp *sexp)
+struct sexp *eval_add(struct sexp *sexp, struct symbol_table *st)
 {
 	int result = 0;
 	struct sexp *cur = sexp;
@@ -25,7 +26,7 @@ struct sexp *eval_add(struct sexp *sexp)
 			return NULL;
 		}
 
-		arg = eval(cur->cons.car);
+		arg = eval(cur->cons.car, st);
 		if(arg->type != SEXP_ATOM_INT)
 		{
 			/* Temporary error message */
@@ -41,7 +42,7 @@ struct sexp *eval_add(struct sexp *sexp)
 	return sexp_make_int(result);
 }
 
-struct sexp *eval_minus(struct sexp *sexp)
+struct sexp *eval_minus(struct sexp *sexp, struct symbol_table *st)
 {
 	int result = 0;
 	int first = 1;
@@ -56,7 +57,7 @@ struct sexp *eval_minus(struct sexp *sexp)
 			return NULL;
 		}
 
-		arg = eval(cur->cons.car);
+		arg = eval(cur->cons.car, st);
 		if(arg->type != SEXP_ATOM_INT)
 		{
 			/* Temporary error message */
@@ -78,7 +79,7 @@ struct sexp *eval_minus(struct sexp *sexp)
 	return sexp_make_int(result);
 }
 
-struct sexp *eval_quote(struct sexp *sexp)
+struct sexp *eval_quote(struct sexp *sexp, struct symbol_table *st)
 {
 	if (sexp->type != SEXP_CONS)
 	{
@@ -89,7 +90,7 @@ struct sexp *eval_quote(struct sexp *sexp)
 	return sexp_dup(sexp->cons.car);
 }
 
-struct sexp *eval_car(struct sexp *sexp)
+struct sexp *eval_car(struct sexp *sexp, struct symbol_table *st)
 {
 	struct sexp *list;
 	struct sexp *res;
@@ -100,7 +101,7 @@ struct sexp *eval_car(struct sexp *sexp)
 		return NULL;
 	}
 
-	list = eval(sexp->cons.car);
+	list = eval(sexp->cons.car, st);
 
 	if (list->type != SEXP_CONS)
 	{
@@ -113,7 +114,7 @@ struct sexp *eval_car(struct sexp *sexp)
 	return res;
 }
 
-struct sexp *eval_cdr(struct sexp *sexp)
+struct sexp *eval_cdr(struct sexp *sexp, struct symbol_table *st)
 {
 	struct sexp *list;
 	struct sexp *res;
@@ -124,7 +125,7 @@ struct sexp *eval_cdr(struct sexp *sexp)
 		return NULL;
 	}
 
-	list = eval(sexp->cons.car);
+	list = eval(sexp->cons.car, st);
 
 	if (list->type != SEXP_CONS)
 	{
@@ -155,7 +156,7 @@ static int list_len(struct sexp *sexp)
 	return i;
 }
 
-struct sexp *eval_cons(struct sexp *sexp)
+struct sexp *eval_cons(struct sexp *sexp, struct symbol_table *st)
 {
 	int arg_count = list_len(sexp);
 
@@ -173,8 +174,8 @@ struct sexp *eval_cons(struct sexp *sexp)
 	}
 
 	return sexp_make_cons(
-		eval(sexp->cons.car),
-		eval(sexp->cons.cdr->cons.car)
+		eval(sexp->cons.car, st),
+		eval(sexp->cons.cdr->cons.car, st)
 		);
 }
 
@@ -221,7 +222,7 @@ static eval_func get_builtin(const char *name)
 	return NULL;
 }
 
-struct sexp *eval(struct sexp *sexp)
+struct sexp *eval(struct sexp *sexp, struct symbol_table *st)
 {
 	if (sexp && sexp->type == SEXP_CONS)
 	{
@@ -232,10 +233,13 @@ struct sexp *eval(struct sexp *sexp)
 
 			if(func != NULL)
 			{
-				return func(sexp->cons.cdr);
+				return func(sexp->cons.cdr, st);
 			}
 		}
-		PutString("error: This is not a function\n");
+
+		PutString("Error: ");
+		sexp_print(sexp->cons.car);
+		PutString(" is not a function.\n");
 		return NULL;
 	}
 	else

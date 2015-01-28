@@ -2,17 +2,25 @@
 
 #include "crisp/parse.h"
 #include "crisp/eval.h"
+#include "crisp/symbol_table.h"
 #include "syscall.h"
 
 int main(void)
 {
+	struct symbol_table st;
 	struct sexp *parsed, *result;
+
+	if (symbol_table_init(&st, 1024) != 0)
+	{
+		PutString("Could not init symbol table\n");
+		return EXIT_FAILURE;
+	}
 
 	parsed = parse();
 
 	while (parsed != NULL)
 	{
-		result = eval(parsed);
+		result = eval(parsed, &st);
 
 		sexp_print(result);
 		PutChar('\n');
