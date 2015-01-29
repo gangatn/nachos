@@ -1,17 +1,28 @@
-\documentclass{report}
+\documentclass{article}
 
 % PACKAGES
 \usepackage[utf8]{inputenc}
+% \usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry} % it seems too wide, doesn't it ?
 % --
 
 \title{NachOS Rapport}
 \author{
+    Groupe F \\
+  {\rule{5cm}{0.4pt}}\\
+  Jérémy Derdaele\\
+  José-Paul Dominguez\\
+  Timothée Frappé--Vialatoux\\
+  Nizâmouddine Gangat\\
+  {\rule{5cm}{0.4pt}}\\
 }
 \begin{document}
 \maketitle
 
 \tableofcontents
-\chapter{Fonctionnalités}
+
+\newpage
+
+\section{Fonctionnalités}
 
 Cette version de NachOS, a été étendu en mettant principalement l'accent sur la gestion des processus et le système de fichier.
 
@@ -21,9 +32,9 @@ Le système de fichier propose une façon plus créative de gérer les fichiers 
 
 De façon plus classique, le système dispose d'une console synchrone et de la gestion des processus légers (threads).
 
-\chapter{Spécifications}
+\section{Spécifications}
 
-\section{Appels systèmes de base}
+\subsection{Appels systèmes de base}
 
 \begin{verbatim}
 void Halt();
@@ -34,9 +45,9 @@ Arrête le système.
 void  Exit(int status);
 \end{verbatim}
 Termine le processus courant.
-\section{Entrées/Sorties}
+\subsection{Entrées/Sorties}
 
-\subsection{Appels systèmes}
+\subsubsection{Appels systèmes}
 
 \begin{verbatim}
 void PutChar( char c  );
@@ -69,10 +80,10 @@ void GetInt( int *n  );
 \end{verbatim}
 Permet de lire un entier  "n" depuis l'entrée standard. Cette appel est bloquant.
 
-\section{Threads utilisateurs}
+\subsection{Threads utilisateurs}
 Le système de threads actuel permet de créer des threads quelque soit le thread appelant grâce à l'appel système UserThreadCreate().Il n'y a pas de lien de parenté : chaque threads peut donc attendre la terminaison d'un autre thread appartenant au même processus grâce à l'appel système UserThreadJoin(). Dans le cas d'une tentative d'attente sur un thread déjà terminé ou sur un thread non connu, la fonction retourne directement, sans effet de bord.
 
-\subsection{Appels systèmes}
+\subsubsection{Appels systèmes}
 
 \begin{verbatim}
 int UserThreadCreate ( void (*f)(void*), void* arg  );
@@ -89,8 +100,8 @@ void UserThreadJoin( int tid  );
 \end{verbatim}
 Attend la terminaison du thread avec le tid donnée.Cet appel est bloquant tant que le thread attendu n'est pas terminé.  Un appel à UserThreadJoin avec le tid du thread appelant retourne immédiatement, il n'y a pas d'effet de bord. Dans le cas où le tid ne correspond à aucun thread, la fonction retourne immédiatement.
 
-\section{Processus utilisateurs}
-\subsection{Appels systèmes}
+\subsection{Processus utilisateurs}
+\subsubsection{Appels systèmes}
 
 \begin{verbatim}
 int Fork ( );
@@ -110,8 +121,8 @@ int ForkExec ( char *filename  );
 Crée un nouveau processus à partir du programme donné et l'execute. Le pid du processus créé est retourné dans le père.
 Le père continue ensuite son exécution en parrallèle.
 
-\chapter{Implantation}
-\section{Entrées/Sorties}
+\section{Implantation}
+\subsection{Entrées/Sorties}
 Une Console synchrone a été développé. Elle permet par le biais d'appels systèmes d'écrire ou de lire au choix :
 
 \begin{itemize}
@@ -122,7 +133,7 @@ Une Console synchrone a été développé. Elle permet par le biais d'appels sys
 
 Pour plus de souplesse, la machine a été modifié afin de faire la distinction entre le symbole EOF et le caractère 'ÿ'.
 
-\section{Multithreadings}
+\subsection{Multithreadings}
 A la création d'un thread, un nouvel identifiant (tid) lui est assigné. Le problème est qu'en se contentant d'incrémenter un compteur représentant le prochain tid à attribuer, on peut arriver très vite à un dépassement d'entier. Pour éviter cela, à chaque libération d'un tid par un thread, ce tid est mis dans une liste dans lequel les prochains threads créés viendront récupérer un tid si la liste n'est pas vide.
 Ce thread est ensuite ajouté dans la liste des threads courant du processus et l'espace d'adressage du processus lui est partagé.
 
@@ -133,11 +144,11 @@ L'ordonnanceur s'occupe alors de détruire le thread et l'espace d'adressage qui
 
 Lorsque plusieurs attentes (join) sont fait sur le même thread depuis des threads différents, le résultat est indéterminé. Cela est dû au fait que le premier thread qui se réveil va effacer ensuite la référence dans la liste des threads du processus, ce qui rendra l'utilisation de cet référence invalide dans les autres threads.
 
-\section{Mémoire virtuelle}
-\section{Gestion des fichiers}
-\section{Réseaux}
+\subsection{Mémoire virtuelle}
+\subsection{Gestion des fichiers}
+\subsection{Réseaux}
 
-\chapter{Tests utilisateurs}
+\section{Tests utilisateurs}
 
 Programmes de test des threads :
 
@@ -159,9 +170,9 @@ Programmes de test des processus :
   \item testforkexec : programme créant un processus avec le contexte d'un autre programme avec l'appel à ForkExec
 \end{itemize}
 
-\chapter{Développement du projet}
+\section{Développement du projet}
 
-\section{Notes de développement}
+\subsection{Notes de développement}
 
 \begin{itemize}
   \item Les processus créés ne sont pas attendus par le père. L'implémentation d'un Wait reste à faire.
