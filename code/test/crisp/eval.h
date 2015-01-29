@@ -11,4 +11,6 @@
  */
 struct sexp *eval(struct sexp *sexp, struct symbol_table *st);
 
+#define FUNC_SYMBOL_NAME "lambda"
+
 #endif /* EVAL_H_ */

@@ -182,3 +182,58 @@ struct sexp *sexp_dup(struct sexp *sexp)
 	}
 	return NULL;
 }
+
+
+/*
+ * sexp_list_at:
+ * return the 'index''nt element of the list
+ * NULL if there is no such index
+ * -1 if the sexp is not a list
+ */
+struct sexp *sexp_list_at(struct sexp *sexp, int index)
+{
+	while (index --> 0)
+	{
+		if (sexp->type != SEXP_CONS)
+		{
+			return ((void*)-1);
+		}
+		sexp = sexp->cons.cdr;
+	}
+
+	if (sexp == NULL)
+	{
+		return NULL;
+	}
+	else if (sexp->type != SEXP_CONS)
+	{
+		return ((void*)-1);
+	}
+	else
+	{
+		return sexp->cons.car;
+	}
+}
+
+
+/*
+ * sexp_list_len:
+ * return the length of the given sexp list, -1 if it's not a list
+ */
+int sexp_list_len(struct sexp *sexp)
+{
+	struct sexp *cur = sexp;
+	int i = 0;
+
+	while(cur)
+	{
+		if(cur->type != SEXP_CONS)
+		{
+			/* Invalid list */
+			return -1;
+		}
+		i++;
+		cur = cur->cons.cdr;
+	}
+	return i;
+}

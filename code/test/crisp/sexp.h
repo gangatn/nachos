@@ -65,7 +65,24 @@ void sexp_free(struct sexp *sexp);
  */
 void sexp_print(struct sexp *sexp);
 
+/* sexp_dup:
+ * Copy in memory the given sexp
+ */
 struct sexp *sexp_dup(struct sexp *sexp);
+
+/*
+ * sexp_list_at:
+ * return the 'index''nt element of the list
+ * NULL if there is no such index
+ * -1 if the sexp is not a list
+ */
+struct sexp *sexp_list_at(struct sexp *sexp, int index);
+
+/*
+ * sexp_list_len:
+ * return the length of the given sexp list, -1 if it's not a list
+ */
+int sexp_list_len(struct sexp *sexp);
 
 /* sexp_make_*:
  * Bunch of make functions to make allocation easier
