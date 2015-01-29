@@ -91,6 +91,12 @@
   \item On vérifie que le processus à la permission d'écire
   \item On duplique la page concernée
   \end{itemize}
+
+  Chaque page:
+  \begin{itemize}
+  \item Peut être référencée par plusieurs processus
+  \item Doit être libérée uniquement quand plus aucun processus ne l'utilise
+  \end{itemize}
 \end{frame}
 
 \begin{frame}

@@ -2,7 +2,7 @@
 
 % PACKAGES
 \usepackage[utf8]{inputenc}
-% \usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry} % it seems too wide, doesn't it ?
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry} % it seems too wide, doesn't it ?
 % --
 
 \title{NachOS Rapport}
@@ -121,6 +121,123 @@ int ForkExec ( char *filename  );
 Crée un nouveau processus à partir du programme donné et l'execute. Le pid du processus créé est retourné dans le père.
 Le père continue ensuite son exécution en parrallèle.
 
+\subsection{Bibliothèque standard C}
+Une partie de la bibliothèque standard du C est disponible pour les programmes utilisateurs.
+\subsubsection{stdlib.h}
+Macros:
+\begin{itemize}
+\item EXIT\_FAILURE
+\item EXIT\_SUCCESS
+\item NULL
+\end{itemize}
+Types:
+\begin{itemize}
+\item size\_t
+\end{itemize}
+\begin{verbatim}
+void abort(void);
+\end{verbatim}
+Arrête l'execution du processus courant avec pour la valeu de retour 1, affiche  ``Aborted.'' sur la sortie standard
+
+\begin{verbatim}
+void *malloc(size_t n);
+\end{verbatim}
+Alloue dynamiquent n octets et retoune l'addresse de l'espace alloué.
+Renvoie un pointeur NULL si il n'y a plus de mémoire disponible.
+
+\begin{verbatim}
+void *free(void *ptr);
+\end{verbatim}
+Libère l'espace mémoire précedemment alloué (par malloc).
+Si ptr est égal à NULL, aucune action n'est effectuée.
+Si ptr n'est pas un pointeur alloué par malloc ou si il a déjà été libéré, le comportement
+est indéfini.
+
+\begin{verbatim}
+void *calloc(size_t nmemb, size_t size);
+\end{verbatim}
+Alloue dynamiquement un tableau de nmemb éléments d'un taille size chacun et retoune l'addresse de l'espace alloué.
+Le contenu de l'espace mémoire retourné est mis à zéro.
+Renvoie un pointeur NULL si il n'y a plus de mémoire disponible.
+
+
+\begin{verbatim}
+void *realloc(void *ptr, size_t n);
+\end{verbatim}
+Change la taille de l'espace mémoire précedemment alloué ptr à n octets.
+Renvoie un pointeur vers cette zone, ce pointeur est égal à null si le changement
+n'a pas pu être effectué.  Si ptr est égal à NULL, la sématique est similaire à malloc(n).
+Si n est égal à 0, la sémantique est similaire à free(ptr).
+
+\subsubsection{stddef.h}
+Macros:
+\begin{itemize}
+\item offsetof(st, m): retourne l'offset en octets du membre m de la structure st.
+\end{itemize}
+\subsubsection{string.h}
+
+\begin{verbatim}
+size_t strlen(const char *str);
+\end{verbatim}
+retourne la taille en octets de la chaine de caractère str (caractère de terminaison '\textbackslash 0' exclu)
+
+\begin{verbatim}
+int strcmp(const char *s1, const char *s2);
+\end{verbatim}
+Compare les deux chaines de caractère s1 et s2.  Retourne un entier inférieur, egal ou supérieur à 0 si s1 est
+respectivement inférieure, égale, supérieure à s2 (lexicographiquement).
+
+\begin{verbatim}
+char *strdup(const char *str);
+\end{verbatim}
+Retourne un pointeur vers une copie de la chaine de caractère str ou NULL si il ne reste plus de mémoire allouable.
+La chaine de caractère renvoyée peut être libérée avec la fonction free.
+\subsubsection{ctype.h}
+
+\begin{verbatim}
+int isalnum(int c);
+\end{verbatim}
+Vérifie que c est un chiffre ou un caractère alphabétique.
+
+\begin{verbatim}
+int isalpha(int c);
+\end{verbatim}
+Vérifie que c est un caractère alphabétique.
+
+\begin{verbatim}
+int isdigit(int c);
+\end{verbatim}
+Vérifie que c est un chiffre.
+
+\begin{verbatim}
+int isblank(int c);
+\end{verbatim}
+Vérifie que c est un caractère vide (espace ou tabulation).
+
+\begin{verbatim}
+int isspace(int c);
+\end{verbatim}
+Vérifie que c est un caractère d'espacement (espace, \textbackslash f,
+\textbackslash n \textbackslash r \textbackslash t \textbackslash v)
+
+\begin{verbatim}
+int islower(int c);
+\end{verbatim}
+Vérifie que c est une caractère alphabétique minuscule.
+
+\begin{verbatim}
+int isupper(int c);
+\end{verbatim}
+Vérifie que c est une caractère alphabétique majuscule.
+
+\subsubsection{assert.h}
+defini la macro
+\begin{verbatim}
+assert(expression)
+\end{verbatim}
+
+S'assure que l'expression est différente de 0, appelle la fonction abort le cas échéant.
+Si la macro NDEBUG est définie, assert(expression) est ignorée
 \section{Implantation}
 \subsection{Entrées/Sorties}
 Une Console synchrone a été développé. Elle permet par le biais d'appels systèmes d'écrire ou de lire au choix :
@@ -145,8 +262,11 @@ L'ordonnanceur s'occupe alors de détruire le thread et l'espace d'adressage qui
 Lorsque plusieurs attentes (join) sont fait sur le même thread depuis des threads différents, le résultat est indéterminé. Cela est dû au fait que le premier thread qui se réveil va effacer ensuite la référence dans la liste des threads du processus, ce qui rendra l'utilisation de cet référence invalide dans les autres threads.
 
 \subsection{Mémoire virtuelle}
+\subsubsection{Fork}
+Lors du fork, dupliquer totalement l'espace mémoire du père serais parfois inutile est trop couteûx, nous avons donc implanté une optimisation nomée copy on write.  Lors du fork, toutes les pages du père et du fils sont paramétrées en ReadOnly.  Cela signifie que si l'un des deux processus essaye d'écrire dans sa mémoire il va générer une exception ReadOnly.  Dans le gestionnaire de cette exception, on vérifie que le processus est autorisé à écrire dans la page demandée, si oui on copie la page avec les droits d'écriture, si non on arrête le programme (faute de segmentation).\\
+
+Avec cette approche, une page peut être référencé par plusieurs processus, ainsi, la page doit être libérée seulement lorsque le dernier utilisateur la libère.  Pour régler se problème, une solution très simple consiste à changer FrameProvider pour qu'il fonctionne avec un nombre de référence plutôt qu'avec une bitmap.
 \subsection{Gestion des fichiers}
-\subsection{Réseaux}
 
 \section{Tests utilisateurs}
 
@@ -168,6 +288,12 @@ Programmes de test des processus :
   \item testexec : programme appelant Exec
   \item testforkandexec : programme créant un processus qui remplace son contexte par celui d'un autre programme avec l'appel à Exec
   \item testforkexec : programme créant un processus avec le contexte d'un autre programme avec l'appel à ForkExec
+\end{itemize}
+
+Programmes de test généralistes :
+\begin{itemize}
+\item crispy : un interpreteur du language crisp (dialecte de lisp),
+  utilise massivement la mémoire dynamique
 \end{itemize}
 
 \section{Développement du projet}
