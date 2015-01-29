@@ -1,18 +1,108 @@
 \documentclass{beamer}
 
+\usepackage{beamerthemeAmsterdam}
+%\usecolortheme{lily}
+
 % PACKAGES
 \usepackage[utf8]{inputenc}
 \usepackage[francais]{babel}
+\usepackage{xcolor}
+\usepackage{fancyvrb}
 % --
 
-\title{NachOS Rapport}
-\author{Groupe F}
+\title{Projet NachOS}
+
+\author{
+  Groupe F \newline{}
+  {\rule{5cm}{0.4pt}}\newline{}
+  Jérémy Derdaele\newline{}
+  José-Paul Dominguez\newline{}
+  Timothée Frappé--Vialatoux\newline{}
+  Nizamouddine Gangat\newline{}
+  {\rule{5cm}{0.4pt}}\newline{}
+}
 
 \begin{document}
-\frame{\titlepage}
+\begin{frame}
+  \titlepage
+\end{frame}
 
-\frame{
-  \frametitle{Introduction}
-}
+\section*{int main(void)}
+\begin{frame}
+  \frametitle{Sommaire}
+  \tableofcontents
+\end{frame}
+
+\section{Threads utilisateurs}
+\subsection{Modèle}
+\begin{frame}
+  \frametitle{Modèle}
+  Tout les threads sont au meme niveau
+\end{frame}
+
+\subsection{Primitives}
+\begin{frame}
+  \frametitle{Primitive}
+  Tout les threads sont au meme niveau
+\end{frame}
+
+\section{Mémoire virtuelle}
+\subsection{Processus}
+\begin{frame}
+  \frametitle{Processus}
+\end{frame}
+
+\subsection{Allocation dynamique}
+\begin{frame}
+  \frametitle{Processus}
+\end{frame}
+
+\section{Système de fichier}
+\subsection{Présentation}
+\begin{frame}
+  \frametitle{Présentation}
+\end{frame}
+
+\subsection{Implantation}
+
+\subsubsection{Points importants}
+\begin{frame}
+  \frametitle{Points importants}
+\end{frame}
+
+\subsubsection{Notre solution}
+\begin{frame}
+  \frametitle{Notre solution}
+\end{frame}
+
+\section{Réseau}
+\begin{frame}
+  \frametitle{Réseau}
+\end{frame}
+
+
+\section*{return 0;}
+
+\subsection{Organisation}
+\begin{frame}
+  \frametitle{Organisation}
+\end{frame}
+
+\subsection{Conclusion}
+\begin{frame}[fragile]
+  \frametitle{Conclusion}
+\begin{verbaterm}[fontsize=\scriptsize]
+Questions ?
+
+Ticks: total 869727823, idle 869133578, system 1420, user 592825
+Disk I/O: reads 0, writes 0
+Console I/O: reads 126, writes 104
+Paging: faults 0
+Network I/O: packets received 0, sent 0
+
+Cleaning up...
+\end{verbaterm}
+
+\end{frame}
 
 \end{document}
