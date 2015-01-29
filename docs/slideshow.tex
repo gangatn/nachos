@@ -18,7 +18,7 @@
   Jérémy Derdaele\newline{}
   José-Paul Dominguez\newline{}
   Timothée Frappé--Vialatoux\newline{}
-  Nizamouddine Gangat\newline{}
+  Nizâmouddine Gangat\newline{}
   {\rule{5cm}{0.4pt}}\newline{}
 }
 
@@ -37,19 +37,38 @@
 \subsection{Modèle}
 \begin{frame}
   \frametitle{Modèle}
-  Tout les threads sont au meme niveau
+  \begin{itemize}
+  \item Pas de hiérarchie entre les threads d'un espace mémoire
+  \item Partage de l'espace mémoire du thread créateur
+  \item ... dont la la liste threads de cet espace
+  \item Identification des threads par un tid
+  \end{itemize}
 \end{frame}
 
 \subsection{Primitives}
 \begin{frame}
-  \frametitle{Primitive}
-  Tout les threads sont au meme niveau
+  \frametitle{Primitives}
+  \begin{itemize}
+    \item UserThreadCreate()
+    \item UserThreadExit()
+    \item UserThreadJoin()
+  \end{itemize}
 \end{frame}
 
 \section{Mémoire virtuelle}
 \subsection{Processus}
 \begin{frame}
-  \frametitle{Processus}
+  \frametitle{Processus : modèle et primitives}
+  \begin{itemize}
+  \item Chaque processus a son propre espace d'adressage
+  \item Gestion hiérarchique des processus et rattachement au pid 1
+  \item Appels systèmes ``Fork'', ``Exec'', ``ForkExec''
+  \item Attente d'un processus fils : ``WaitPid''
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Copy on write}
 \end{frame}
 
 \subsection{Allocation dynamique}
@@ -58,21 +77,47 @@
 \end{frame}
 
 \section{Système de fichier}
-\subsection{Présentation}
+\subsection{Sémantique}
 \begin{frame}
   \frametitle{Présentation}
+  \begin{itemize}
+  \item Identification des fichiers par des tags
+  \item Pas de notion de hiérarchie entre les fichiers
+  \item Navigation et gestion grâce aux tags
+  \end{itemize}
 \end{frame}
 
-\subsection{Implantation}
+\begin{frame}
+  \frametitle{Implantation}
+  Structure :
+  \begin{itemize}
+  \item Groupes composés de tags et des fichiers associés
+  \item Les tags référencent les groupes auxquels ils appartiennent
+  \end{itemize}
+  
+  Sur le disque :
+  \begin{itemize}
+  \item 2 blocs réservés :
+    \begin{itemize}
+    \item inode mappant un bitmap des blocs libres
+    \item premier tag (tags chaînés sur les blocs du disque)
+    \end{itemize}
+  \item Fichiers et groupes identifés par un inode
+  \end{itemize}
+\end{frame}
 
-\subsubsection{Points importants}
 \begin{frame}
   \frametitle{Points importants}
+  \begin{itemize}
+  \item .
+  \end{itemize}
 \end{frame}
 
-\subsubsection{Notre solution}
 \begin{frame}
   \frametitle{Notre solution}
+  \begin{itemize}
+  \item Beaucoup de secteurs utilisés pour les tags et groupes
+  \end{itemize}
 \end{frame}
 
 \section{Réseau}
