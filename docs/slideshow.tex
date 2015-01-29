@@ -58,22 +58,83 @@
 \section{Mémoire virtuelle}
 \subsection{Processus}
 \begin{frame}
-  \frametitle{Processus : modèle et primitives}
+  \frametitle{Processus : propriétés}
   \begin{itemize}
-  \item Chaque processus a son propre espace d'adressage
-  \item Gestion hiérarchique des processus et rattachement au pid 1
-  \item Appels systèmes ``Fork'', ``Exec'', ``ForkExec''
-  \item Attente d'un processus fils : ``WaitPid''
+  \item Espace d'addressage indépendants
+  \item Identifié par un id (pid)
+  \item Organisation hiérachique
+    \begin{itemize}
+    \item Un processus ``Père'' crée un processus ``Fils''
+    \item Un processus ``Père'' peut attendre la terminaison d'un ``Fils''
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Copy on write}
+  \frametitle{Fork}
+  \begin{itemize}
+  \item On duplique entièrement la mémoire du père
+  \item Certaines pages ne sont jamais modifiées
+  \end{itemize}
+  Approche peu efficace
 \end{frame}
+
+\begin{frame}
+  \frametitle{Copy on Write}
+  Lors du Fork:
+  \begin{itemize}
+    \item On marques toutes les pages du père et du fils en lecture seule
+  \end{itemize}
+
+  Lors d'une exception ReadOnly
+  \begin{itemize}
+  \item On vérifie que le processus à la permission d'écire
+  \item On duplique la page concernée
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Exec}
+  L'espace d'adressage du processus est totalement remplacé.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Terminaison}
+  \begin{itemize}
+    \ite
+  \end{itemize}
+  Approche peu efficace
+\end{frame}
+
 
 \subsection{Allocation dynamique}
 \begin{frame}
-  \frametitle{Processus}
+  \frametitle{Srbk}
+  %% INSERT IMAGE OF MEMORY HERE
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Interpréteur Crisp}
+  Un dialecte de Lisp\\
+  Objectifs:
+  \begin{itemize}
+  \item Tester notre système sur une application ``réelle''
+  \item Implanter des parties de la librairie standard du C
+  \item Bénéficier d'un language de programmation (turing complet)
+  \end{itemize}
+
+  {\scriptsize
+\begin{verbatim}
+{define fact
+    {lambda {x}
+        {if { = x 0}
+            1
+            {* x {fact {- x 1}}}
+        }
+    }
+}
+\end{verbatim}
+}
 \end{frame}
 
 \section{Système de fichier}
@@ -88,13 +149,20 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Points importants}
+  \begin{itemize}
+  \item .
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Implantation}
   Structure :
   \begin{itemize}
   \item Groupes composés de tags et des fichiers associés
   \item Les tags référencent les groupes auxquels ils appartiennent
   \end{itemize}
-  
+
   Sur le disque :
   \begin{itemize}
   \item 2 blocs réservés :
@@ -103,20 +171,6 @@
     \item premier tag (tags chaînés sur les blocs du disque)
     \end{itemize}
   \item Fichiers et groupes identifés par un inode
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Points importants}
-  \begin{itemize}
-  \item .
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Notre solution}
-  \begin{itemize}
-  \item Beaucoup de secteurs utilisés pour les tags et groupes
   \end{itemize}
 \end{frame}
 

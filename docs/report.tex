@@ -56,7 +56,7 @@ Lit un caractère sur l'entrée standard. Cet appel est bloquant. La valeur reto
 \begin{verbatim}
 void GetString( char *s, int n  );
 \end{verbatim}
-Lit une chaine de caractère dans un buffer de taille donnée sur l'entrée standard. La lecture s'arrête lorsque la taille du buffer est atteinte ou que les caractères '\0' ou '\n' sont rencontrés ou que la fin de fichier est atteinte. Le caractère '\n' est conservé dans la chaine. Force l'écriture du caractère '\0' en fin de chaine (à la fin du buffer dans le pire cas). Cet appel est bloquant.
+Lit une chaine de caractère dans un buffer de taille donnée sur l'entrée standard. La lecture s'arrête lorsque la taille du buffer est atteinte ou que les caractères '\textbackslash 0' ou '\textbackslash n' sont rencontrés ou que la fin de fichier est atteinte. Le caractère '\textbackslash n' est conservé dans la chaine. Force l'écriture du caractère '\textbackslash 0' en fin de chaine (à la fin du buffer dans le pire cas). Cet appel est bloquant.
 
 \begin{verbatim}
 void PutInt( int n );
@@ -87,7 +87,7 @@ Termine le thread courant.
 \begin{verbatim}
 void UserThreadJoin( int tid  );
 \end{verbatim}
-Attend la terminaison du thread avec le tid donnée.Cet appel est bloquant tant que le thread attendu n'est pas terminé.  Un appel à UserThreadJoin avec le tid du thread appelant retourne immédiatement, il n'y a pas d'effet de bord. Dans le cas où le tid ne correspond à aucun thread, la fonction retourne immédiatement. 
+Attend la terminaison du thread avec le tid donnée.Cet appel est bloquant tant que le thread attendu n'est pas terminé.  Un appel à UserThreadJoin avec le tid du thread appelant retourne immédiatement, il n'y a pas d'effet de bord. Dans le cas où le tid ne correspond à aucun thread, la fonction retourne immédiatement.
 
 \section{Processus utilisateurs}
 \subsection{Appels systèmes}
@@ -95,14 +95,14 @@ Attend la terminaison du thread avec le tid donnée.Cet appel est bloquant tant 
 \begin{verbatim}
 int Fork ( );
 \end{verbatim}
-Crée un nouveau processus en dupliquant le processus appelant. Dans le processus père, le pid du processus fils est retourné. Dans le processus fils, 0 est retourné. 
+Crée un nouveau processus en dupliquant le processus appelant. Dans le processus père, le pid du processus fils est retourné. Dans le processus fils, 0 est retourné.
 Il n'y a pour le moment, pas de gestion d'erreur.
 
 \begin{verbatim}
 int Exec ( char *s  );
 \end{verbatim}
 Remplace le processus appelant par un nouveau processus. Ce nouveau processus représente un programme dont le chemin est donnée en paramètre.
-Cette fonction retourne -1 dans le cas ou l'executable n'a pas pu être chargé. Elle ne retourne ne rien sinon. Les autres cas d'erreur seront traité ultérieurement. 
+Cette fonction retourne -1 dans le cas ou l'executable n'a pas pu être chargé. Elle ne retourne ne rien sinon. Les autres cas d'erreur seront traité ultérieurement.
 
 \begin{verbatim}
 int ForkExec ( char *filename  );
@@ -112,7 +112,7 @@ Le père continue ensuite son exécution en parrallèle.
 
 \chapter{Implantation}
 \section{Entrées/Sorties}
-Une Console synchrone a été développé. Elle permet par le biais d'appels systèmes d'écrire ou de lire au choix : 
+Une Console synchrone a été développé. Elle permet par le biais d'appels systèmes d'écrire ou de lire au choix :
 
 \begin{itemize}
 \item Un caractère
@@ -147,7 +147,7 @@ Programmes de test des threads :
   \item testthreads\_noexit : programme créant des threads qui ne font pas d'appels à l'appel
   système UserThreadExit
   \item testthreadsinthreads : programme créant des threads qui créent des threads
-  
+
 \end{itemize}
 
 Programmes de test des processus :
