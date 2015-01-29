@@ -116,8 +116,13 @@
 
 \subsection{Allocation dynamique}
 \begin{frame}
-  \frametitle{Srbk}
-  %% INSERT IMAGE OF MEMORY HERE
+\frametitle{Sbrk}
+  \begin{itemize}
+  \item void* Sbrk(unsigned limiteOctet)
+  \item Sbrk(0) : limite actuelle
+  \item Sauvegarde de l'ancienne limite à chaque fois
+  \item Pages du tas validées en fonction de la limite demandée
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
