@@ -9,4 +9,4 @@ build:
 
 clean:
 	latexmk -C
-	${RM} *.nav *.snm
+	${RM} *.nav *.snm *.vrb
