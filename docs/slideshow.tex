@@ -101,9 +101,10 @@
 \begin{frame}
   \frametitle{Terminaison}
   \begin{itemize}
-    \ite
+    \item Si un père se termine avant son fils, il est rattaché à ``init'' (pid 1)
+    \item Un processus peut attendre la terminaison de son fils avec l'appel système \texttt{int WaitPid(int pid)}
   \end{itemize}
-  Approche peu efficace
+
 \end{frame}
 
 
