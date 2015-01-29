@@ -9,7 +9,7 @@
 #define  __BIGGEST_ALIGNEMENT__ 4
 #endif
 
-#define MEM_INIT_SIZE 65536
+#define MEM_INIT_SIZE 524288
 
 #define DO_ALIGN(val, align) ((val+(align-1))&~(align-1))
 #define FREEBLK_HEADSIZE (DO_ALIGN(sizeof(struct fb), __BIGGEST_ALIGNMENT__))
