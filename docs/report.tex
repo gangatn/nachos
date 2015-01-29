@@ -3,6 +3,8 @@
 % PACKAGES
 \usepackage[utf8]{inputenc}
 % \usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry} % it seems too wide, doesn't it ?
+\usepackage[francais]{babel}
+\usepackage{enumitem}
 % --
 
 \title{NachOS Rapport}
@@ -52,7 +54,7 @@ Termine le processus courant.
 \begin{verbatim}
 void PutChar( char c  );
 \end{verbatim}
-Écrirt un caractère sur la sortie standard. Cet appel est bloquant.
+Écrit un caractère sur la sortie standard. Cet appel est bloquant.
 
 \begin{verbatim}
 void PutString( char *str  );
@@ -98,7 +100,10 @@ Termine le thread courant.
 \begin{verbatim}
 void UserThreadJoin( int tid  );
 \end{verbatim}
-Attend la terminaison du thread avec le tid donnée.Cet appel est bloquant tant que le thread attendu n'est pas terminé.  Un appel à UserThreadJoin avec le tid du thread appelant retourne immédiatement, il n'y a pas d'effet de bord. Dans le cas où le tid ne correspond à aucun thread, la fonction retourne immédiatement.
+Attend la terminaison du thread avec le tid donnée. Cet appel est bloquant
+tant que le thread attendu n'est pas terminé.  Un appel à UserThreadJoin
+avec le tid du thread appelant retourne immédiatement, il n'y a pas d'effet de bord.
+Dans le cas où le tid ne correspond à aucun thread, la fonction retourne immédiatement.
 
 \subsection{Processus utilisateurs}
 \subsubsection{Appels systèmes}
