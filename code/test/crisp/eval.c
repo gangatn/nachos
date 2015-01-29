@@ -378,7 +378,6 @@ struct sexp *eval_equal(struct sexp *sexp, struct symbol_table *st)
 		arg = eval(cur->cons.car, st);
 		if(arg->type != SEXP_ATOM_INT)
 		{
-			/* Temporary error message */
 			PutString("Error: (=) needs number as argument\n");
 			sexp_free(arg);
 			return ERROR;
@@ -623,6 +622,8 @@ static int apply_sym(int argc, struct sexp *fun_args,
 	for (i = 0; i < argc; i++)
 	{
 		struct sexp *sym = elem(fun_args, i);
+		/* FIXME(Jeremy): we need to eval all parameters then add them
+		 * this might not work otherwise */
 		struct sexp *val = eval(elem(call_args, i), st);
 
 		if (symbol_table_set(st, sym->atom_sym, val) != 0)
