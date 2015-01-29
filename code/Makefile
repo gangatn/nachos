@@ -5,10 +5,6 @@ export DEFAULT_VERBOSITY
 
 .PHONY: all clean depend print build build-origin origin check mips-progs bin
 
-# By default, build the check target so that we check that initial
-# nachos code still compile
-check:
-
 all: build
 
 build build-origin: bin
@@ -53,7 +49,7 @@ cleantmp:
 
 ## LPR	:=	echo
 LPR	:=	enscript --columns=2  --borders -r --landscape \
-		--media=A4 --verbose --pretty-print --toc 
+		--media=A4 --verbose --pretty-print --toc
 
 print:
 	-for dir in machine threads userprog filesys network vm test; \
@@ -64,7 +60,7 @@ print:
 		$${dir}/*.cc $${dir}/*.S \
 		$${dir}/*.c; \
 	done > list
-	$(LPR) `cat list` 
+	$(LPR) `cat list`
 
 INDENT	:= indent --indent-level4 -nut
 DIRS_INDENT	:= threads userprog test

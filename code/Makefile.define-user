@@ -95,8 +95,8 @@ crispy_EXTRA_SOURCES = $(CRISP_SRC)
 # $(eval $(call define-flavor,final,userprog filesys network,\
 #     synchconsole.cc userthread.cc))
 
-$(eval $(call define-flavor,wip,userprog filesys-stub network, synchconsole.cc userthread.cc \
+$(eval $(call define-flavor,final,userprog filesys-stub network, synchconsole.cc userthread.cc \
 	   syscall_handlers.cc frameprovider.cc process_manager.cc))
 
 
-USER_FLAVORS=wip
+USER_FLAVORS=final
