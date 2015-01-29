@@ -2,19 +2,9 @@
 
 % PACKAGES
 \usepackage[utf8]{inputenc}
-\usepackage[francais]{babel}
-\usepackage{enumitem}
-\usepackage{titling}
-\newcommand{\subtitle}[1]{%
-  \posttitle{%
-    \par\end{center}
-    \begin{center}\large#1\end{center}
-    \vskip0.5em}%
-}
 % --
 
 \title{NachOS Rapport}
-\subtitle{Groupe F}
 \author{
 }
 \begin{document}
@@ -23,13 +13,13 @@
 \tableofcontents
 \chapter{Fonctionnalités}
 
-Cet exemplaire de nachos, a été étendue en mettant principalement l'accent sur la gestion des processus et le système de fichier.
+Cette version de NachOS, a été étendu en mettant principalement l'accent sur la gestion des processus et le système de fichier.
 
-Chaque programme utilisateur peut lancer des forks et des execs de façon indépendante, mais aussi de façon performante grâce à la technique du copie-on-write.
+Chaque programme utilisateur peut lancer des forks et des execs de façon indépendante, mais aussi de façon performante grâce à la technique du copy-on-write.
 
-Le système de fichier propose une façon plus créative de gérer les fichiers grâce à un système d'étiquette (appelée tag par la suite). Ce système permet un accès direct aux fichiers sans avoir à passer par une hiérarchie comme sous les systèmes de fichier de type POSIX.
+Le système de fichier propose une façon plus créative de gérer les fichiers grâce à des étiquettes (appelées ``tag'' par la suite). Ce système permet un accès direct aux fichiers sans avoir à passer par une hiérarchie comme sous les systèmes de fichiers de type POSIX.
 
-De façon plus classique, nous avons aussi développé une console synchrone et une gestion des processus léger.
+De façon plus classique, le système dispose d'une console synchrone et de la gestion des processus légers (threads).
 
 \chapter{Spécifications}
 
@@ -43,7 +33,7 @@ Arrête le système.
 \begin{verbatim}
 void  Exit(int status);
 \end{verbatim}
-Termine le processus courant. Retourne 
+Termine le processus courant.
 \section{Entrées/Sorties}
 
 \subsection{Appels systèmes}
@@ -51,22 +41,22 @@ Termine le processus courant. Retourne
 \begin{verbatim}
 void PutChar( char c  );
 \end{verbatim}
-Permet d'écrire un caractère "c" sur la sortie standard. Cette appel est bloquant.
+Écrirt un caractère sur la sortie standard. Cet appel est bloquant.
 
 \begin{verbatim}
 void PutString( char *str  );
 \end{verbatim}
-Permet d'écrire une chaine de caractère "str" donnée  sur la sortie standard. Cette appel est bloquant.
+Écrirt la chaine de caractère donné en paramètre sur la sortie standard. Cet appel est bloquant.
 
 \begin{verbatim}
 int GetChar ( );
 \end{verbatim}
-Permet de lire un caractère sur la sortie standard. Cette appel est bloquant. La valeur renvoyée est de type int pour permettre de faire la distinction entre  la valeur 255 non signée et la valeur -1 signée qui sont confondus sur un octet.
+Lit un caractère sur l'entrée standard. Cet appel est bloquant. La valeur retournée est de type int afin de ne pas confontre la valeur 255 (ÿ) d'un char avec -1 (EOF);
 
 \begin{verbatim}
 void GetString( char *s, int n  );
 \end{verbatim}
-Permet de lire une chaine de caractère "s" de taille  maximale "n" octets sur la sortie standard. Cette appel est bloquant. La taille donnée "n" ne peut être supérieur à 128.
+Lit une chaine de caractère dans un buffer de taille donnée sur l'entrée standard. La lecture s'arrête lorsque la taille du buffer est atteinte ou que les caractères '\0' ou '\n' sont rencontrés ou que la fin de fichier est atteinte. Le caractère '\n' est conservé dans la chaine. Force l'écriture du caractère '\0' en fin de chaine (à la fin du buffer dans le pire cas). Cet appel est bloquant.
 
 \begin{verbatim}
 void PutInt( int n );
