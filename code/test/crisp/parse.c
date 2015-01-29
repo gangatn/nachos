@@ -98,6 +98,10 @@ static struct sexp *sexp(void)
 		return sexp_make_char(token_str[0]);
 	case TOKEN_INT:
 		return sexp_make_int(parse_int());
+	case TOKEN_TRUE:
+		return sexp_make_bool(1);
+	case TOKEN_FALSE:
+		return sexp_make_bool(0);
 
 	case TOKEN_CLOSE:
 	case TOKEN_ERR:

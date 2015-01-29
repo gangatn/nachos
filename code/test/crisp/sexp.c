@@ -64,6 +64,19 @@ struct sexp *sexp_make_int(int val)
 	return ret;
 }
 
+struct sexp *sexp_make_bool(int val)
+{
+	struct sexp *ret = malloc(sizeof(struct sexp));
+
+	if (ret != NULL)
+	{
+		ret->type = SEXP_ATOM_BOOL;
+		ret->atom_bool = val;
+	}
+
+	return ret;
+}
+
 struct sexp *sexp_make_char(char val)
 {
 	struct sexp *ret = malloc(sizeof(struct sexp));
@@ -137,6 +150,9 @@ void sexp_print(struct sexp *sexp)
 		case SEXP_ATOM_SYM:
 			PutString(sexp->atom_sym);
 			break;
+		case SEXP_ATOM_BOOL:
+			PutChar('#');
+			PutChar(sexp->atom_bool ? 't' : 'f');
 		}
 	}
 }
@@ -154,6 +170,8 @@ struct sexp *sexp_dup(struct sexp *sexp)
 				);
 		case SEXP_ATOM_INT:
 		    return sexp_make_int(sexp->atom_int);
+		case SEXP_ATOM_BOOL:
+		    return sexp_make_bool(sexp->atom_bool);
 		case SEXP_ATOM_CHAR:
 			return sexp_make_char(sexp->atom_char);
 		case SEXP_ATOM_STR:

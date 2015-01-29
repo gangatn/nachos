@@ -18,7 +18,9 @@ enum token_id
 	TOKEN_STR,
 	TOKEN_SYM,
 	TOKEN_CHAR,
-	TOKEN_INT
+	TOKEN_INT,
+	TOKEN_TRUE,
+	TOKEN_FALSE
 };
 
 extern char token_str[MAX_TOKEN_STR_SIZE];

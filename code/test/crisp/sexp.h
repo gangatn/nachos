@@ -19,7 +19,8 @@ enum sexp_type
 	SEXP_ATOM_INT,
 	SEXP_ATOM_CHAR,
 	SEXP_ATOM_STR,
-	SEXP_ATOM_SYM
+	SEXP_ATOM_SYM,
+	SEXP_ATOM_BOOL
 };
 
 /*
@@ -49,6 +50,7 @@ struct sexp
 	    char atom_char;
 		char *atom_str;
 	    char *atom_sym;
+		int atom_bool;
 	};
 };
 
@@ -72,6 +74,7 @@ struct sexp *sexp_dup(struct sexp *sexp);
  */
 struct sexp *sexp_make_cons(struct sexp *car, struct sexp *cdr);
 struct sexp *sexp_make_int(int val);
+struct sexp *sexp_make_bool(int val);
 struct sexp *sexp_make_char(char val);
 struct sexp *sexp_make_str(char *val);
 struct sexp *sexp_make_sym(char *val);

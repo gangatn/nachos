@@ -183,6 +183,23 @@ int lexer_next_token(void)
 			return TOKEN_QUOTE;
 		}
 	}
+	else if (c == '#')
+	{
+		c = getc();
+		if (c == 't')
+		{
+			return TOKEN_TRUE;
+		}
+		else if (c == 'f')
+		{
+			return TOKEN_FALSE;
+		}
+		else
+		{
+			PUSH_CHAR(c);
+			return TOKEN_ERR;
+		}
+	}
 	else if (c == 0 || c == -1)
 	{
 		return TOKEN_NONE;
