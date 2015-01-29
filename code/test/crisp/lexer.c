@@ -57,6 +57,11 @@ static inline int isop(int c)
 	return c == '+' || c == '-' || c == '/' || c == '*';
 }
 
+static inline int iscomparator(int c)
+{
+	return c == '=' || c == '>' || c == '<';
+}
+
 static inline int read_sym(void)
 {
 	return read_while(isalpha);
@@ -83,8 +88,8 @@ static inline int read_num(void)
 
 #define PUSH_CHAR(c) \
 	do { \
-	token_str[0] = c; \
-	token_str[1] = '\0'; \
+	token_str[offset++] = c; \
+	token_str[offset] = '\0'; \
 	} while (0)
 
 /*
@@ -136,6 +141,21 @@ int lexer_next_token(void)
 		{
 		    return TOKEN_SYM;
 		}
+	}
+	else if (iscomparator(c))
+	{
+		PUSH_CHAR(c);
+		c = getc();
+
+		if (iscomparator(c))
+		{
+		    PUSH_CHAR(c);
+		}
+		else
+		{
+			ungetc(c);
+		}
+		return TOKEN_SYM;
 	}
 	else if (isalpha(c))
 	{

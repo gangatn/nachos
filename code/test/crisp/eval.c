@@ -83,7 +83,36 @@ struct sexp *eval_add(struct sexp *sexp, struct symbol_table *st)
 	{
 		if (cur->type != SEXP_CONS)
 		{
-			PutString("error: + arguments are not a valid list\n");
+			PutString("error: (+) arguments are not a valid list\n");
+			return ERROR;
+		}
+
+		arg = eval(cur->cons.car, st);
+		if(arg->type != SEXP_ATOM_INT)
+		{
+			PutString("Error: (+) needs number as argument\n");
+			sexp_free(arg);
+			return ERROR;
+		}
+
+		result += arg->atom_int;
+		cur = cur->cons.cdr;
+		sexp_free(arg);
+	}
+	return sexp_make_int(result);
+}
+
+struct sexp *eval_mult(struct sexp *sexp, struct symbol_table *st)
+{
+	int result = 1;
+	struct sexp *cur = sexp;
+	struct sexp *arg;
+
+	while(cur != NULL)
+	{
+		if (cur->type != SEXP_CONS)
+		{
+			PutString("error: (*) arguments are not a valid list\n");
 			return ERROR;
 		}
 
@@ -91,12 +120,12 @@ struct sexp *eval_add(struct sexp *sexp, struct symbol_table *st)
 		if(arg->type != SEXP_ATOM_INT)
 		{
 			/* Temporary error message */
-			PutString("Error: + needs number as argument\n");
+			PutString("Error: (*) needs number as argument\n");
 			sexp_free(arg);
 			return ERROR;
 		}
 
-		result += arg->atom_int;
+		result *= arg->atom_int;
 		cur = cur->cons.cdr;
 		sexp_free(arg);
 	}
@@ -114,15 +143,14 @@ struct sexp *eval_minus(struct sexp *sexp, struct symbol_table *st)
 	{
 		if (cur->type != SEXP_CONS)
 		{
-			PutString("Error: (+) arguments are not a valid list\n");
+			PutString("Error: (-) arguments are not a valid list\n");
 			return ERROR;
 		}
 
 		arg = eval(cur->cons.car, st);
 		if(arg->type != SEXP_ATOM_INT)
 		{
-			/* Temporary error message */
-			PutString("Error: (+) needs number as argument\n");
+			PutString("Error: (-) needs number as argument\n");
 			sexp_free(arg);
 			return ERROR;
 		}
@@ -332,6 +360,156 @@ struct sexp *eval_lambda(struct sexp *sexp, struct symbol_table *st)
 		);
 }
 
+struct sexp *eval_equal(struct sexp *sexp, struct symbol_table *st)
+{
+	int result = -1, cmp;
+	int argc = 0;
+	struct sexp *cur = sexp;
+	struct sexp *arg;
+
+	while(cur != NULL)
+	{
+		if (cur->type != SEXP_CONS)
+		{
+			PutString("error: (=) arguments are not a valid list\n");
+			return ERROR;
+		}
+
+		arg = eval(cur->cons.car, st);
+		if(arg->type != SEXP_ATOM_INT)
+		{
+			/* Temporary error message */
+			PutString("Error: (=) needs number as argument\n");
+			sexp_free(arg);
+			return ERROR;
+		}
+
+		if (result == -1)
+		{
+			cmp = arg->atom_int;
+			result = 1;
+		}
+		else
+		{
+			if (arg->atom_int != cmp)
+			{
+				result = 0;
+			}
+		}
+
+		argc++;
+
+		cur = cur->cons.cdr;
+		sexp_free(arg);
+	}
+
+	if(argc <= 1)
+	{
+		PutString("Error: (=) too few arguments (at least 2, got ");
+		PutInt(argc);
+		PutString(")\n");
+		return ERROR;
+	}
+	return sexp_make_bool(result);
+}
+
+struct sexp *eval_greater(struct sexp *sexp, struct symbol_table *st)
+{
+	int result = -1, cmp;
+	int argc = 0;
+	struct sexp *cur = sexp;
+	struct sexp *arg;
+
+	while(cur != NULL)
+	{
+		if (cur->type != SEXP_CONS)
+		{
+			PutString("error: (>) arguments are not a valid list\n");
+			return ERROR;
+		}
+
+		arg = eval(cur->cons.car, st);
+		if(arg->type != SEXP_ATOM_INT)
+		{
+			/* Temporary error message */
+			PutString("Error: (>) needs number as argument\n");
+			sexp_free(arg);
+			return ERROR;
+		}
+
+		if (result == -1)
+		{
+			cmp = arg->atom_int;
+			result = 1;
+		}
+		else
+		{
+			if (arg->atom_int > cmp)
+			{
+				result = 0;
+			}
+			cmp = arg->atom_int;
+		}
+
+		argc++;
+
+		cur = cur->cons.cdr;
+		sexp_free(arg);
+	}
+
+	if(argc <= 1)
+	{
+		PutString("Error: (>) too few arguments (at least 2, got ");
+		PutInt(argc);
+		PutString(")\n");
+		return ERROR;
+	}
+	return sexp_make_bool(result);
+}
+
+struct sexp *eval_if(struct sexp *sexp, struct symbol_table *st)
+{
+	struct sexp *bool, *res;
+	int argc;
+
+	argc = list_len(sexp);
+
+	if (argc < 2)
+	{
+		PutString("Error: (if) too few arguments (at least 2, got ");
+		PutInt(argc);
+		PutString(")\n");
+	}
+
+	bool = elem(sexp, 0);
+
+	if (bool == ERROR)
+	{
+		PutString("Error: (if) ill formed condition\n");
+		return ERROR;
+	}
+
+	bool = eval(bool, st);
+	if (bool == NULL && bool->type == SEXP_ATOM_BOOL)
+	{
+		PutString("Error: (if) condition must be a boolean\n");
+		sexp_free(bool);
+		return ERROR;
+	}
+
+	res = elem(sexp, bool->atom_bool ? 1 : 2);
+	if (res == ERROR)
+	{
+		PutString("Error: (if) ill formed then or else\n");
+		sexp_free(bool);
+		return ERROR;
+	}
+
+	res = eval (res, st);
+	sexp_free(bool);
+	return res;
+}
+
 /*
  * We don't use the symbol table for builtins
  * This is only for convenience, but this may be changed later
@@ -355,12 +533,16 @@ struct symbol builtins[] =
 {
 	{"+", eval_add },
 	{"-", eval_minus },
+	{"*", eval_mult },
+	{"=", eval_equal },
+	{">", eval_greater },
 	{"quote", eval_quote },
 	{"car", eval_car },
 	{"cdr", eval_cdr },
 	{"cons", eval_cons },
 	{"define", eval_define },
-	{FUNC_SYMBOL_NAME, eval_lambda }
+	{FUNC_SYMBOL_NAME, eval_lambda },
+	{"if", eval_if },
 };
 
 static eval_func get_builtin(const char *name)
@@ -441,12 +623,14 @@ static int apply_sym(int argc, struct sexp *fun_args,
 	for (i = 0; i < argc; i++)
 	{
 		struct sexp *sym = elem(fun_args, i);
-		struct sexp *val = elem(call_args, i);
+		struct sexp *val = eval(elem(call_args, i), st);
 
 		if (symbol_table_set(st, sym->atom_sym, val) != 0)
 		{
+			sexp_free(val);
 			return 1;
 		}
+		sexp_free(val);
 	}
 	return 0;
 }
@@ -490,6 +674,13 @@ static struct sexp *eval_exec_function(struct sexp *function, struct sexp *args,
 		return ERROR;
 	}
 
+	res = elem(function, 1);
+	if (res == ERROR)
+	{
+		PutString("Error: (eval lambda) invalid body!");
+		return ERROR;
+	}
+
 	saved_symbols = malloc(sizeof(*saved_symbols) * fun_argc);
 	if (saved_symbols == NULL)
 	{
@@ -512,7 +703,7 @@ static struct sexp *eval_exec_function(struct sexp *function, struct sexp *args,
 		return ERROR;
 	}
 
-	res = eval(elem(function, 1), st);
+	res = eval(res, st);
 
 	if (restore_sym(fun_argc, saved_symbols, st) != 0)
 	{
