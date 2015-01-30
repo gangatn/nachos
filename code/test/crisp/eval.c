@@ -52,6 +52,7 @@ struct symbol builtins[] =
 	{"define", eval_define },
 	{FUNC_SYMBOL_NAME, eval_lambda },
 	{"if", eval_if },
+	{"print", eval_print },
 };
 
 static eval_func get_builtin(const char *name)
