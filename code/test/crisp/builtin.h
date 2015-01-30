@@ -1,3 +1,8 @@
+/*
+ * Builtin evaluation functions
+ *
+ * TODO(Jeremy): Use xmacro seems a good idea
+ * */
 #ifndef BUILTIN_H_
 #define BUILTIN_H_
 
@@ -15,5 +20,6 @@ struct sexp *eval_cons(struct sexp *sexp, struct symbol_table *st);
 struct sexp *eval_define(struct sexp *sexp, struct symbol_table *st);
 struct sexp *eval_lambda(struct sexp *sexp, struct symbol_table *st);
 struct sexp *eval_if(struct sexp *sexp, struct symbol_table *st);
+struct sexp *eval_print(struct sexp *sexp, struct symbol_table *st);
 
 #endif /* BUILTIN_H_ */

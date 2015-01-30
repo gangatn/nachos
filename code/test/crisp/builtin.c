@@ -439,3 +439,80 @@ struct sexp *eval_if(struct sexp *sexp, struct symbol_table *st)
 	sexp_free(bool);
 	return res;
 }
+
+static void print_sexp_internal(struct sexp *sexp)
+{
+	switch (sexp->type)
+	{
+	case SEXP_CONS:
+	{
+	    print_sexp_internal(sexp->cons.car);
+		if (sexp->cons.cdr != NULL)
+		{
+			PutChar(' ');
+			print_sexp_internal(sexp->cons.cdr);
+		}
+	}
+		break;
+	case SEXP_ATOM_INT:
+		PutInt(sexp->atom_int);
+		break;
+	case SEXP_ATOM_CHAR:
+		PutChar(sexp->atom_char);
+		break;
+	case SEXP_ATOM_STR:
+		PutString(sexp->atom_str);
+		break;
+	case SEXP_ATOM_SYM:
+		PutString(sexp->atom_sym);
+		break;
+	case SEXP_ATOM_BOOL:
+		PutChar('#');
+		PutChar(sexp->atom_bool ? 't' : 'f');
+	}
+}
+
+static void print_sexp(struct sexp *sexp)
+{
+	if(sexp != NULL)
+	{
+		if (sexp->type == SEXP_CONS)
+		{
+			PutString("(");
+			print_sexp_internal(sexp);
+			PutString(")");
+		}
+		else
+		{
+			print_sexp_internal(sexp);
+		}
+	}
+}
+
+
+struct sexp *eval_print(struct sexp *sexp, struct symbol_table *st)
+{
+	struct sexp *cur = sexp;
+	struct sexp *arg;
+
+	while(cur != NULL)
+	{
+		if (cur->type != SEXP_CONS)
+		{
+			PutString("error: (print) arguments are not a valid list\n");
+			return ERROR;
+		}
+
+		arg = eval(cur->cons.car, st);
+		if (arg == ERROR)
+		{
+			return ERROR;
+		}
+
+		print_sexp(arg);
+
+		cur = cur->cons.cdr;
+		sexp_free(arg);
+	}
+	return NULL;
+}

@@ -42,12 +42,12 @@ int main(void)
 	{
 		result = eval(parsed, &st);
 
-		if(result != (void*)-1)
+		if(result != (void*)-1 && result != NULL)
 		{
 			sexp_print(result);
-			PutChar('\n');
 			sexp_free(result);
 		}
+		PutChar('\n');
 
 		sexp_free(parsed);
 
