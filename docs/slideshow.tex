@@ -8,6 +8,7 @@
 \usepackage[francais]{babel}
 \usepackage{xcolor}
 \usepackage{fancyvrb}
+\usepackage{graphicx}
 % --
 
 \title{Projet NachOS}
@@ -34,28 +35,70 @@
 \end{frame}
 
 \section{Threads utilisateurs}
-\subsection{Modèle}
+\subsection{Propriétés}
 \begin{frame}
-  \frametitle{Modèle}
+  \frametitle{Propriétés}
+  Les threads utilisateurs:
   \begin{itemize}
-  \item Pas de hiérarchie entre les threads d'un espace mémoire
-  \item Partage de l'espace mémoire du thread créateur
-  \item ... dont la la liste threads de cet espace
-  \item Identification des threads par un tid
+  \item Partagent le même espace mémoire
+  \item Pas de hiérarchie entre les threads
+  \item Identification unique (tid)
+  \item Terminaison automatique
   \end{itemize}
 \end{frame}
 
-\subsection{Primitives}
 \begin{frame}
-  \frametitle{Primitives}
-  \begin{itemize}
-    \item UserThreadCreate()
-    \item UserThreadExit()
-    \item UserThreadJoin()
-  \end{itemize}
+  \frametitle{Espace mémoire}
+  \begin{center}
+    \includegraphics[scale=0.4]{user_threads.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Création}
+\begin{verbatim}
+int UserThreadCreate(void (*f)(void*), void* arg);
+\end{verbatim}
+\begin{itemize}
+  \item Alloue une pile pour le nouveau thread
+  \item Valeur de retour:
+    \begin{itemize}
+    \item Succès: un identifiant unique du thread créé
+    \item Echec: -1
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Terminaison}
+\begin{verbatim}
+void UserThreadExit(void);
+\end{verbatim}
+\begin{itemize}
+  \item Termine immédiatement l'exécution du thread appelant
+  \item Le thread 0 peut se terminer avant les autres
+  \item Ne libère pas la pile et le tid
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Attente de Terminaison}
+\begin{verbatim}
+void UserThreadJoin(int tid);
+\end{verbatim}
+\begin{itemize}
+  \item Attend la terminaison d'un thread, appel bloquant
+  \item Si le thread est déjà terminé, l'appel est non bloquant
+  \item Permet de libérer la pile allouée et le tid
+\end{itemize}
 \end{frame}
 
 \section{Mémoire virtuelle}
+
+\begin{frame}
+  \frametitle{Processus}
+\end{frame}
+
 \subsection{Processus}
 \begin{frame}
   \frametitle{Processus : propriétés}
@@ -70,13 +113,38 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
-  \frametitle{Fork}
+\begin{frame}[fragile]
+  \frametitle{Terminaison}
+\begin{verbatim}
+void Exit(int code);
+\end{verbatim}
   \begin{itemize}
-  \item On duplique entièrement la mémoire du père
-  \item Certaines pages ne sont jamais modifiées
+  \item Termine immédiatement l'exécution du processus
+    \item Tue tout les threads utilisateur
   \end{itemize}
-  Approche peu efficace
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Fork}
+\begin{verbatim}
+int Fork(void);
+\end{verbatim}
+Valeur de retour
+\begin{itemize}
+\item Processus père
+  \begin{itemize}
+  \item Succès: le pid du fils
+  \item Echec: -1
+  \end{itemize}
+\item Processus fils: Toujours 0
+\end{itemize}
+
+Sémantique
+\begin{itemize}
+\item On duplique entièrement la mémoire du père
+\item Certaines pages ne sont jamais modifiées
+\end{itemize}
+Approche peu efficace
 \end{frame}
 
 \begin{frame}
@@ -86,12 +154,26 @@
     \item On marques toutes les pages du père et du fils en lecture seule
   \end{itemize}
 
+  \begin{center}
+  \includegraphics[scale=0.3]{fork_mem.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Copy on Write}
   Lors d'une exception ReadOnly
   \begin{itemize}
   \item On vérifie que le processus à la permission d'écire
-  \item On duplique la page concernée
+  \item On duplique la page concernée avec permission d'écrire
   \end{itemize}
 
+  \begin{center}
+  \includegraphics[scale=0.5]{cow.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Copy on Write}
   Chaque page:
   \begin{itemize}
   \item Peut être référencée par plusieurs processus
@@ -99,9 +181,31 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
   \frametitle{Exec}
-  L'espace d'adressage du processus est totalement remplacé.
+\begin{verbatim}
+int Exec(const char *filename);
+\end{verbatim}
+L'espace d'adressage du processus est totalement remplacé par l'executable filename.\\
+
+Valeur de retour
+\begin{itemize}
+  \item Succès: ne retourne pas car l'espace mémoire est remplacé
+  \item Echec: -1
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{ForkExec}
+\begin{verbatim}
+int ForkExec(const char *filename);
+\end{verbatim}
+Fork suivi d'un exec mais de manière atomique.
+Valeur de retour (pour le père uniquement):
+\begin{itemize}
+\item Succès: le pid du fils
+\item Echec: -1
+\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -115,13 +219,35 @@
 
 
 \subsection{Allocation dynamique}
+
 \begin{frame}
-\frametitle{Sbrk}
+  \frametitle{Mémoire dynamique}
+\end{frame}
+
+\begin{frame}
+\frametitle{Tas}
+\begin{center}
+\includegraphics[scale=0.4]{tas.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Srbk}
+\begin{center}
+\includegraphics[scale=0.4]{sbrk.png}
+\end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Allocateur de mémoire dynamique}
+  Allocateur basé sur des ``free-list''\\
+
+  Primitive:
   \begin{itemize}
-  \item void* Sbrk(unsigned limiteOctet)
-  \item Sbrk(0) : limite actuelle
-  \item Sauvegarde de l'ancienne limite à chaque fois
-  \item Pages du tas validées en fonction de la limite demandée
+    \item void *malloc(size\_t size);
+    \item void free(void *ptr);
+    \item void *calloc(size\_t nmemb, size\_t size);
+    \item void *realloc(void *ptr, size\_t size);
   \end{itemize}
 \end{frame}
 
@@ -149,8 +275,27 @@
 }
 \end{frame}
 
+\begin{frame}
+  \frametitle{Bibliothèque standard C}
+  Des parties de la libc sont disponibles à l'utilisateur.
+
+  \begin{itemize}
+    \item assert.h: macro assert
+    \item ctype.h: tests sur le type d'un caractère
+    \item stddef.h: définit NULL, size\_t, etc
+    \item stdlib.h: abort(), allocation dynamique
+    \item string.h: manipulation de chaines
+  \end{itemize}
+\end{frame}
+
 \section{Système de fichier}
 \subsection{Sémantique}
+
+\begin{frame}
+  \frametitle{Système de fichier}
+\end{frame}
+
+
 \begin{frame}
   \frametitle{Présentation}
   \begin{itemize}
@@ -172,29 +317,34 @@
   \end{itemize}
 \end{frame}
 
+\subsection{Implantation}
 \begin{frame}
-  \frametitle{Implantation}
+  \frametitle{Structure de données}
+  \begin{center}
+  \includegraphics[scale=0.4]{fs_data.png}
+  \end{center}
   Structure :
   \begin{itemize}
   \item Groupes composés de tags et des fichiers associés
   \item Les tags référencent les groupes auxquels ils appartiennent
   \end{itemize}
+\end{frame}
 
-  Sur le disque :
-  \begin{itemize}
-  \item 2 blocs réservés :
-    \begin{itemize}
-    \item inode mappant un bitmap des blocs libres
-    \item premier tag (tags chaînés sur les blocs du disque)
-    \end{itemize}
-  \item Fichiers et groupes identifés par un inode
-  \end{itemize}
+\begin{frame}
+  \frametitle{Structure du disque}
+  \begin{center}
+  \includegraphics[scale=0.4]{fs_struct.png}
+  \end{center}
 \end{frame}
 
 \section*{return 0;}
 
 \begin{frame}[fragile]
   \frametitle{Conclusion}
+  \begin{itemize}
+  \item Améliorations possibles
+  \item Déroulement du projet
+  \end{itemize}
 \begin{verbaterm}[fontsize=\scriptsize]
 Questions ?
 
