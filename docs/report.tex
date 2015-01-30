@@ -5,6 +5,7 @@
 \usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
 \usepackage[francais]{babel}
 \usepackage{enumitem}
+\usepackage{graphicx}
 
 % --
 
@@ -243,7 +244,7 @@ assert(expression)
 \end{verbatim}
 
 S'assure que l'expression est différente de 0, appelle la fonction abort le cas échéant.
-Si la macro NDEBUG est définie, assert(expression) est ignorée
+Si la macro NDEBUG est définie, assert(expression) est ignorée.
 \section{Implantation}
 \subsection{Entrées/Sorties}
 Une Console synchrone a été développé. Elle permet par le biais d'appels systèmes d'écrire ou de lire au choix :
@@ -273,6 +274,19 @@ Lors du fork, dupliquer totalement l'espace mémoire du père serais parfois inu
 
 Avec cette approche, une page peut être référencé par plusieurs processus, ainsi, la page doit être libérée seulement lorsque le dernier utilisateur la libère.  Pour régler se problème, une solution très simple consiste à changer FrameProvider pour qu'il fonctionne avec un nombre de référence plutôt qu'avec une bitmap.
 \subsection{Gestion des fichiers}
+Le système de fichier est géré par un système de tag :
+
+\begin{center}
+\includegraphics[scale=0.4]{datastructure.png}
+\end{center}
+
+Les données sont représentées sur le disque de la façon suivante :
+
+\begin{center}
+\includegraphics[scale=0.4]{diskstructure.png}
+\end{center}
+
+
 
 \section{Tests utilisateurs}
 
