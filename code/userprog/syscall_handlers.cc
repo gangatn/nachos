@@ -3,6 +3,7 @@
 
 #include "system.h"
 #include "userthread.h"
+#include "openfile_table.h"
 
 /*
  * Utility macro to get params and return value
@@ -13,7 +14,7 @@
  * return the nth parameter, parameters starts from 1
  *
  * RETURN(val):
- * ~~~~~~~~~~
+ * ~~~~~~~~~~~~
  * return the given value
  */
 
@@ -59,6 +60,13 @@ static void copyStringFromMachine(int from, char *to, unsigned int size) {
     }
 
     to[size - 1] = '\0';
+}
+
+static void copyBufToMachine(char *from, int to, unsigned size) {
+    unsigned i;
+
+    for (i = 0; i < size; i++)
+        ASSERT(machine->WriteMem(to + i, 1, from[i]));
 }
 
 bool syscall_putstring(void) {
@@ -201,4 +209,88 @@ bool syscall_sbrk() {
     RETURN(ret);
     return true;
 }
+
+bool syscall_create(void) {
+    int sptr;
+    int size;
+    char filename[MAX_STRING_SIZE];
+
+    sptr = PARAM(1);
+    copyStringFromMachine(sptr, filename, MAX_STRING_SIZE);
+
+    size = PARAM(2);
+
+    RETURN(fileSystem->Create(filename, size) != -1);
+    return true;
+}
+
+bool syscall_open(void) {
+    int sptr;
+    int fd;
+    char filename[MAX_STRING_SIZE];
+    OpenFile *file;
+
+    sptr = PARAM(1);
+    copyStringFromMachine(sptr, filename, MAX_STRING_SIZE);
+
+    fd = openFileTable->Reserve();
+    if (fd == -1)
+	    goto out;
+
+    file = fileSystem->Open(filename);
+    if (!file) {
+	    fd = -1; goto out;
+    }
+
+    openFileTable->Set(fd, file);
+
+out:
+    RETURN(fd);
+    return true;
+}
+
+bool syscall_close(void) {
+    int fd;
+    OpenFile *file;
+
+    fd = PARAM(1);
+    file = openFileTable->Get(fd);
+    delete file;
+    openFileTable->Release(fd);
+
+    return true;
+}
+
+bool syscall_read(void) {
+	int fd = -1, sptr, size;
+	char *buf;
+	OpenFile *file = NULL;
+
+	sptr = PARAM(1);
+	size = PARAM(2);
+	fd = PARAM(3);
+
+	if (size < 0)
+		goto error;
+	else if (size == 0) {
+		RETURN(0);
+		return true;
+	}
+
+	file = openFileTable->Get(fd);
+	if (size == -1)
+		goto error;
+
+	buf = new char[size];
+	if (!buf)
+		goto error;
+	RETURN(file->Read(buf, size));
+
+	copyBufToMachine(buf, sptr, size);
+	return true;
+error:
+	RETURN(-1);
+	return true;
+}
+
 #endif /* SYSCALL_HANDLERS_H_ */

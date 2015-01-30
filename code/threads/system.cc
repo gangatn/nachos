@@ -31,6 +31,11 @@ FileSystem *fileSystem;
 
 #ifdef FILESYS
 SynchDisk *synchDisk;
+
+#ifdef CHANGED
+OpenFileTable *openFileTable;
+#endif
+
 #endif
 
 #ifdef USER_PROGRAM     // requires either FILESYS or FILESYS_STUB
@@ -168,6 +173,11 @@ Initialize (int argc, char **argv) {
 
 #ifdef FILESYS
     synchDisk = new SynchDisk ("DISK");
+
+#ifdef CHANGED
+    openFileTable = new OpenFileTable (MAX_OPEN_FILE);
+#endif
+
 #endif
 
 #ifdef FILESYS_NEEDED
